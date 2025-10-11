@@ -3,9 +3,9 @@
 
 ## 有问题请联系作者微信：teachAIGC
 
-首先放一个完整的视频，展示一下效果：
+首先放一个完整的视频，展示一下效果：地址：https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8
 
-[使用方法](./1.mov)
+[使用方法](https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8)
 
 ## 使用方法：
 - 我们需要自己登录到开放大学，并打开对应的课程页面如下图所示：
