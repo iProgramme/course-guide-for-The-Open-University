@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
       .returning();
 
     if (!updatedKey) {
-      return NextResponse.json({ success: false, error: '密钥不存在' }, { status: 404 });
+      return NextResponse.json({ success: false, error: '密钥不存在，请联系微信：teachAIGC' }, { status: 404 });
     }
 
     return NextResponse.json({ 

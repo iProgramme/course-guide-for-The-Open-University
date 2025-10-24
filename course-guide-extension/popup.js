@@ -8,7 +8,7 @@ function showToast(message, type = 'info') {
     
     setTimeout(() => {
         toast.className = toast.className.replace('show', '');
-    }, 3000);
+    }, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -94,8 +94,26 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 showToast('正在验证密钥...', 'info');
                 
-                // 从localStorage获取originalStr字段
-                const originalStr = localStorage.getItem('originalStr') || '';
+                // 从当前页面获取originalStr字段
+                let originalStr = await getOriginalStrFromPage();
+                
+                console.log('第一次尝试获取的originalStr:', originalStr);
+                
+                // 如果第一次尝试失败，可以尝试备用方法
+                if (!originalStr) {
+                    console.log('第一次获取失败，尝试备用方法...');
+                    // 这里可以添加备用获取方法
+                    // 但现在我们先记录错误并停止
+                }
+                
+                console.log('最终获取到的originalStr:', originalStr);
+                console.log('originalStr类型:', typeof originalStr);
+                console.log('originalStr长度:', originalStr ? originalStr.length : 0);
+                
+                if (!originalStr) {
+                    showToast('无法获取当前页面的验证信息，请确保：\n1. 页面已完全加载\n2. 页面包含验证信息\n3. 页面URL在允许的域名范围内', 'error');
+                    return;
+                }
                 
                 // 调用后端验证API，发送密钥和originalStr
                 const response = await fetch('http://localhost:3000/api/keys/verify', {
@@ -158,6 +176,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('网络错误，请检查后端服务是否运行', 'error');
             }
         });
+    }
+    
+    // 从当前页面获取originalStr的函数
+    async function getOriginalStrFromPage() {
+        console.log('开始查询活动标签页...');
+        
+        try {
+            const tabs = await new Promise((resolve, reject) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (result) => {
+                    if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+            
+            if (!tabs || tabs.length === 0) {
+                console.error('未找到活动标签页');
+                return '';
+            }
+            
+            const tab = tabs[0];
+            console.log('找到活动标签页:', tab);
+            
+            // 检查标签页状态，如果是loading状态，等待一段时间再获取
+            if (tab.status !== 'complete') {
+                console.log('标签页尚未加载完成，当前状态:', tab.status);
+                // 等待1秒钟再尝试
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // 直接使用chrome.scripting.executeScript获取页面的localStorage
+            console.log('尝试直接通过scripting API获取originalStr，tabId:', tab.id);
+            
+            const results = await new Promise((resolve, reject) => {
+                try {
+                    chrome.scripting.executeScript({
+                        target: {tabId: tab.id},
+                        func: () => {
+                            try {
+                                // console.log('在页面上下文中执行，尝试获取originalStr');
+                                const value = localStorage.getItem('originalStr');
+                                // todo
+                                // console.log('在页面上下文中获取到的originalStr:', value);
+                                return value || '';
+                            } catch (e) {
+                                console.error('在页面上下文中获取originalStr时出错:', e);
+                                return '';
+                            }
+                        }
+                    }, (results) => {
+                        if (chrome.runtime.lastError) {
+                            reject(chrome.runtime.lastError);
+                        } else {
+                            resolve(results);
+                        }
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+            
+            if (results && results.length > 0 && results[0].result !== undefined) {
+                console.log('直接执行脚本成功获取originalStr:', results[0].result);
+                return results[0].result || '';
+            } else {
+                console.error('直接执行脚本未返回预期结果:', results);
+                return '';
+            }
+        } catch (error) {
+            console.error('获取originalStr时出错:', error);
+            return '';
+        }
     }
     
     // 回车键支持密钥验证

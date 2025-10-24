@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (keyRecord.length === 0) {
-      return NextResponse.json({ success: false, error: '密钥不存在' }, { status: 404 });
+      return NextResponse.json({ success: false, error: '密钥不存在，请联系微信：teachAIGC' }, { status: 404 });
     }
 
     const record = keyRecord[0];
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       // 如果originalParams是字符串，则直接比较
       if (typeof record.originalParams === 'string') {
         if (record.originalParams !== originalStr) {
-          return NextResponse.json({ success: false, error: '密钥与当前设备不匹配，请使用本人授权Key' }, { status: 403 });
+          return NextResponse.json({ success: false, error: '密钥与当前设备不匹配，请使用官方授权Key，联系微信：teachAIGC' }, { status: 403 });
         }
       } 
       // 如果originalParams是对象，检查其中是否包含originalStr
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         );
         
         if (!isMatch) {
-          return NextResponse.json({ success: false, error: '密钥与当前设备不匹配，请使用本人授权Key' }, { status: 403 });
+          return NextResponse.json({ success: false, error: '密钥与当前设备不匹配，请使用官方授权Key，联系微信：teachAIGC' }, { status: 403 });
         }
       }
     }

@@ -551,10 +551,19 @@ const ExtensionController = {
         // 返回true表示异步响应
         return true;
       }
+      // 添加获取当前页面originalStr字段的功能
+      else if (request.action === 'getOriginalStr') {
+        // 现在直接在popup.js中通过chrome.scripting.executeScript获取
+        // 这里可以返回一个空值或错误信息
+        sendResponse({originalStr: '', error: '不再通过content script获取'});
+        return false;
+      }
     });
     
     console.log('课程指南扩展: 控制器已初始化');
   },
+
+  
 
   // 验证密钥的函数，调用后端API
   validateApiKey: async function(apiKey) {
@@ -588,6 +597,28 @@ const ExtensionController = {
     }
   }
 };
+
+// 初始化扩展控制器 - 确保在页面完全加载后
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    ExtensionController.init();
+  });
+} else {
+  // 如果页面已经加载完成，直接初始化
+  ExtensionController.init();
+}
+
+// 作为额外的保障，也等待页面完全加载
+window.addEventListener('load', function() {
+  // 确保控制器已初始化，以防DOMContentLoaded事件已错过
+  if (typeof ExtensionController !== 'undefined' && typeof ExtensionController.init === 'function') {
+    // 为防止重复初始化，我们可以添加一个检查
+    if (!window.extensionControllerInitialized) {
+      ExtensionController.init();
+      window.extensionControllerInitialized = true;
+    }
+  }
+});
 
 // DOM加载时初始化扩展
 document.addEventListener('DOMContentLoaded', function() {
