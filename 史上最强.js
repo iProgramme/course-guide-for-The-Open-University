@@ -3,6 +3,7 @@ const CONFIG = {
     VIDEO_PLAYBACK_RATE: 4.0,       // 视频播放速度
     DEFAULT_WAIT_TIME: 7000,        // 默认等待时间 (ms)
     POLLING_INTERVAL: 1000,         // 轮询间隔 (ms)
+    SUB_SECTION_EXPAND_WAIT: 2000,  // 展开子章节后的短暂等待时间 (ms)
 };
 
 // ==================== HELPER FUNCTIONS (辅助函数) ====================
@@ -97,12 +98,13 @@ async function processItems(items, startIndex = 0) { /* ... 代码不变 ... */
 
 
 /**
- * ================== 主启动函数 (已修复中间启动的逻辑) ==================
+ * ================== 主启动函数 (最终修复版) ==================
  */
 async function startAutomation() {
     console.log("脚本启动，开始自动化处理所有章节...");
 
-    const allSections = document.querySelectorAll('.full-screen-mode-sidebar-menu .full-screen-mode-sidebar-sub-menu');
+    // 注意：这里的选择器可能需要根据实际情况微调，但根据您的代码，这个是有效的
+    const allSections = document.querySelectorAll('.full-screen-mode-sidebar-menu > .full-screen-mode-sidebar-sub-menu');
     
     if (allSections.length === 0) {
         console.error("错误：未找到任何章节！请检查选择器是否正确。");
@@ -112,10 +114,10 @@ async function startAutomation() {
 
     let startSectionIndex = 0;
     let startItemIndex = 0;
-    
-    const activeItem = document.querySelector('.full-screen-mode-sidebar-menu-item.active');
+    let activeItem = document.querySelector('.full-screen-mode-sidebar-menu-item.active');
+
     if (activeItem) {
-        const currentSection = activeItem.closest('.full-screen-mode-sidebar-sub-menu');
+        const currentSection = activeItem.closest('.full-screen-mode-sidebar-menu > .full-screen-mode-sidebar-sub-menu');
         if (currentSection) {
             startSectionIndex = Array.from(allSections).indexOf(currentSection);
             const itemsInCurrentSection = currentSection.querySelectorAll('.full-screen-mode-sidebar-menu-item');
@@ -128,39 +130,53 @@ async function startAutomation() {
 
     for (let i = startSectionIndex; i < allSections.length; i++) {
         const section = allSections[i];
-        if (!section) {
-            console.warn(`警告：在章节列表中发现一个无效项 (索引: ${i})，已跳过。`);
-            continue;
-        }
+        if (!section) continue;
 
-        const sectionTitle = section.querySelector('.full-screen-mode-sidebar-sub-menu-title');
-        
-        // 【关键逻辑修正】
-        // 判断这是否是脚本启动时所在的那个章节。
+        const sectionTitle = section.querySelector(':scope > .full-screen-mode-sidebar-sub-menu-title');
         const isStartingChapter = (i === startSectionIndex && activeItem);
 
         if (sectionTitle) {
             const sectionTitleText = sectionTitle.textContent.trim();
-            console.log(`\n========================================`);
-            console.log(`处理章节 (${i + 1}/${allSections.length}): ${sectionTitleText}`);
-            console.log(`========================================`);
+            console.log(`\n========================================\n处理章节 (${i + 1}/${allSections.length}): ${sectionTitleText}\n========================================`);
 
-            // 只有当这不是我们开始的那个章节时，才点击标题。
-            // 如果是我们开始的章节，它必然已经是展开的，无需点击。
             if (!isStartingChapter) {
                 sectionTitle.click();
                 await sleep(CONFIG.DEFAULT_WAIT_TIME);
             } else {
-                console.log("这是当前活动章节，直接处理内部项目，无需点击章节标题。");
+                console.log("这是当前活动章节，直接处理内部项目。");
             }
         }
-        
+
+        // 深度展开子章节
+        const subSections = section.querySelectorAll(':scope > div > .full-screen-mode-sidebar-sub-menu');
+        if (subSections.length > 0) {
+            console.log(`检测到 ${subSections.length} 个子章节，将进行智能展开...`);
+            for (const subSection of subSections) {
+                const subSectionTitle = subSection.querySelector(':scope > .full-screen-mode-sidebar-sub-menu-title');
+                
+                // 【关键逻辑修正】
+                // 只有在满足以下条件之一时，才点击子章节标题：
+                // 1. 这不是我们开始的那个主章节 (需要全部展开)
+                // 2. 这是我们开始的主章节，但当前这个子章节 *不包含* 我们的活动项 (说明需要展开其他子章节)
+                const shouldClickSubSection = !isStartingChapter || (isStartingChapter && !subSection.contains(activeItem));
+
+                if (shouldClickSubSection && subSectionTitle) {
+                    console.log(`展开子章节: ${subSectionTitle.textContent.trim()}`);
+                    subSectionTitle.click();
+                    await sleep(CONFIG.SUB_SECTION_EXPAND_WAIT);
+                } else if (subSectionTitle) {
+                    console.log(`跳过点击当前活动的子章节: ${subSectionTitle.textContent.trim()}`);
+                }
+            }
+            console.log("所有子章节智能展开完毕。");
+        }
+
         const items = section.querySelectorAll('.full-screen-mode-sidebar-menu-item');
         if (items.length > 0) {
             const currentStartIndex = isStartingChapter ? startItemIndex : 0;
             await processItems(items, currentStartIndex);
         } else {
-            console.log("这个章节下没有找到学习项目，跳过。");
+            console.log("这个章节下没有找到可学习的项目，跳过。");
         }
     }
 
