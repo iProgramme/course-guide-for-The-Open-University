@@ -7,15 +7,17 @@
         body {
             width: 400px;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
             overflow: hidden;
+            background-color: #f9f9f9;
         }
         
         .tabs {
             display: flex;
             border-bottom: 1px solid #e0e0e0;
-            background-color: #f5f5f5;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         .tab-button {
@@ -27,23 +29,25 @@
             font-size: 14px;
             color: #666;
             border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
         }
         
         .tab-button.active {
             color: #2196F3;
             border-bottom: 3px solid #2196F3;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .tab-button:hover {
-            background-color: #e8e8e8;
+            background-color: #f0f0f0;
         }
         
         .tab-content {
             display: none;
-            padding: 15px;
-            height: 400px;
+            padding: 10px;
+            height: 520px;
             overflow-y: auto;
+            background-color: #ffffff;
         }
         
         .tab-content.active {
@@ -56,16 +60,20 @@
             padding: 12px;
             margin: 10px 0;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             background-color: #4CAF50;
             color: white;
             font-size: 16px;
             cursor: pointer;
             text-align: center;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .feature-btn:hover {
             background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         .pro-btn {
@@ -82,58 +90,155 @@
             font-style: italic;
             color: #666;
             padding: 10px;
+            display: none;
         }
         
         .guide-content {
             line-height: 1.6;
+            color: #333;
         }
         
         .guide-content h3 {
             margin-top: 20px;
             margin-bottom: 10px;
             color: #333;
+            font-size: 16px;
         }
         
         .guide-content h3:first-child {
             margin-top: 0;
         }
         
+        .guide-content p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
         .upgrade-content {
             text-align: center;
+            padding: 10px 0;
+        }
+        
+        .upgrade-content h3 {
+            color: #333;
+            margin-top: 0;
         }
         
         .payment-section {
             margin: 15px 0;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
         }
         
         .payment-method {
             margin: 15px 0;
+            padding: 10px;
         }
         
         .payment-image {
-            max-width: 100%;
+            max-width: 150px;
             height: auto;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .price-tag {
             display: inline-block;
-            background-color: #ffeb3b;
-            color: #000;
-            padding: 3px 8px;
-            border-radius: 12px;
+            background: linear-gradient(45deg, #FF9800, #FF5722);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
             font-weight: bold;
+            font-size: 14px;
             margin: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         .wechat-section {
             border-top: 1px solid #eee;
             padding-top: 15px;
             margin-top: 15px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .pro-description {
+            background-color: #e3f2fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .key-input-container {
+            margin-top: 15px;
+        }
+        
+        .key-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .verify-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .verify-btn:hover {
+            background-color: #F57C00;
+        }
+        
+        /* Toast notification styles */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .toast-success {
+            background-color: #4CAF50;
+        }
+        
+        .toast-error {
+            background-color: #f44336;
+        }
+        
+        .toast-info {
+            background-color: #2196F3;
         }
     </style>
 </head>
@@ -146,19 +251,30 @@
     
     <!-- 功能标签页 -->
     <div id="features" class="tab-content active">
-        <h3 style="text-align: center; margin-top: 0;">基础功能</h3>
-        <button id="basic2LevelBtn" class="feature-btn">基础版 (2级目录)</button>
-        <button id="basic3LevelBtn" class="feature-btn">基础版 (3级目录)</button>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button id="basic2LevelBtn" class="feature-btn">
+                <span style="font-size: 18px; font-weight: bold; display: block;">📚 基础版 (2级目录)</span>
+                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">适用于2级结构课程目录</span>
+            </button>
+            
+            <button id="basic3LevelBtn" class="feature-btn">
+                <span style="font-size: 18px; font-weight: bold; display: block;">📖 基础版 (3级目录)</span>
+                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">适用于3级结构课程目录</span>
+            </button>
+        </div>
         
-        <div style="margin-top: 20px;">
-            <h3 style="margin-top: 0;">专业版功能</h3>
-            <div style="background-color: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-                <p>专业版支持自动完成所有章节，无需手动切换</p>
+        <div style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-radius: 10px; border-left: 4px solid #2196F3;">
+            <h3 style="margin-top: 0; text-align: center; color: #333;">💎 专业版功能</h3>
+            <div class="pro-description" style="padding: 10px 0; text-align: center;">
+                <p>自动完成所有章节，无需手动切换</p>
             </div>
-            <button id="proVersionBtn" class="feature-btn pro-btn">专业版 (需验证密钥)</button>
-            <div style="margin-top: 10px;">
-                <input type="password" id="apiKeyInput" placeholder="请输入专业版密钥" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                <button id="verifyKeyBtn" style="width: 100%; padding: 8px; background-color: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">验证密钥</button>
+            <button id="proVersionBtn" class="feature-btn pro-btn" style="margin: 10px auto; display: block;">
+                <span style="font-size: 18px; font-weight: bold; display: block;">🔐 专业版</span>
+                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">(需验证密钥)</span>
+            </button>
+            <div id="keyInputContainer" class="key-input-container">
+                <input type="password" id="apiKeyInput" placeholder="🔑 请输入专业版密钥" class="key-input">
+                <button id="verifyKeyBtn" class="verify-btn">✅ 验证密钥</button>
             </div>
         </div>
         
@@ -168,13 +284,24 @@
     <!-- 使用指南标签页 -->
     <div id="guide" class="tab-content">
         <div class="guide-content">
+            <div style="background: linear-gradient(135deg, #ffecd2, #fcb69f); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px;">
+                <h3>📺 观看教程视频</h3>
+                <p>还不知道怎么用？花5分钟观看教程视频快速上手！</p>
+                <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; padding: 12px 20px; background-color: #00A1D6; color: white; text-decoration: none; border-radius: 8px; margin: 10px 0; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                    👉 点击观看使用教程视频
+                </a>
+            </div>
+            
             <h3>使用说明</h3>
             <p>1. 请先登录到国家开放大学并打开课程页面</p>
+            <img src="../1.png" alt="课程页面示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
             
-            <h3>如何判断目录类型</h3>
+            <h3>如何判断目录类型（pro用户无需判断，直接点击到某一节课程后开始就行）</h3>
             <p>课程目录分为2级和3级两种结构：</p>
             <p>• 2级目录：章节直接显示在侧边栏</p>
+            <img src="../2.png" alt="2级目录示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
             <p>• 3级目录：章节下还有子章节结构</p>
+            <img src="../3.png" alt="3级目录示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
             
             <h3>使用步骤</h3>
             <p>1. 根据课程目录类型点击对应按钮</p>
@@ -185,47 +312,67 @@
             <p>• 脚本仅限电脑使用，手机不可使用</p>
             <p>• 脚本运行时请勿关闭页面或锁屏</p>
             <p>• 可以同时打开其他应用（如微信、QQ等）</p>
-            <p>• 脚本不会自动做练习题</p>
+            <p>• 【脚本不会自动做练习题】，练习题的完成，可以根据视频教学来完成 <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; padding: 12px 20px; background-color: #00A1D6; color: white; text-decoration: none; border-radius: 8px; margin: 10px 0; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                    👉 点击观看使用教程视频
+                </a></p>
         </div>
     </div>
     
     <!-- 升级专业版标签页 -->
     <div id="upgrade" class="tab-content">
         <div class="upgrade-content">
-            <h3>升级专业版</h3>
-            <p>享受更智能的课程完成体验</p>
+            <h3>🎓 升级专业版，享受更智能的课程完成体验</h3>
+            <p style="text-align: left;">
+                【更智能】：自动完成所有章节，无需手动切换章节，不再像是基础版那样，每次还要自己手动切换章节<br>
+                【更快速】：视频课程自动开启4倍速播放（我试过，再高就无效了），让你的上课效率更高<br>
+                【更稳定】：目前测试更多的课程都支持，已经发给我的很多同学（有本地的，也有其他省市的）免费测试过，都说好用<br>
+                【更便宜】：59元/月，永久版149元。刷课机构的报价是50元/门，一学期6门课就是300块钱，5学期至少1500元。而在这，您只需要花3门课的价格就可以解决掉80%的课程<br>
+                【暂时不支持做题】，做题的功能比上课要复杂很多，我们已经在研发中<br>
+            </p>
+            
+
             
             <div class="payment-section">
-                <h3>收费标准</h3>
-                <p>
-                    <span class="price-tag">体验版 49元/月</span><br>
-                    自动完成单门课程所有章节无需手动切换章节，视频课程自动开启4倍速播放
-                </p>
-                <p>
-                    <span class="price-tag">永久版 199元</span><br>
-                    每学期都能使用，持续更新功能
-                </p>
+                <div style="text-align: left; padding: 0 10px;">
+                    <div style="background-color: #e8f5e9; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #4CAF50;">
+                        <p>
+                            <span class="price-tag">体验版 59元/月</span><br>
+                            如果不确定效果好不好，可以买一个月的体验一下，一个月的时间，完全可以上完这学期所有课了
+                        </p>
+                    </div>
+                    <div style="background-color: #e3f2fd; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #2196F3;">
+                        <p>
+                            <span class="price-tag">永久版 149元</span><br>
+                            如果您剩余的课程大于3学期，推荐买此项
+                        </p>
+                    </div>
+                </div>
             </div>
             
-            <div class="payment-method">
-                <h3>支付宝支付</h3>
-                <img src="payment/alipay.jpg" alt="支付宝收款码" class="payment-image" style="max-width: 200px;">
-            </div>
-            
-            <div class="payment-method">
-                <h3>微信支付</h3>
-                <img src="payment/wechat.jpg" alt="微信收款码" class="payment-image" style="max-width: 200px;">
+            <div style="display: flex; justify-content: space-around; margin: 15px 0; flex-wrap: wrap; gap: 10px;">
+                <div class="payment-method" style="text-align: center; flex: 1; min-width: 150px; margin: 0 5px; background-color: #f9f9f9; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h3>💳 支付宝支付</h3>
+                    <img src="payment/alipay.jpg" alt="支付宝收款码" class="payment-image">
+                </div>
+                
+                <div class="payment-method" style="text-align: center; flex: 1; min-width: 150px; margin: 0 5px; background-color: #f9f9f9; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h3>💰 微信支付</h3>
+                    <img src="payment/wechat.jpg" alt="微信收款码" class="payment-image">
+                </div>
             </div>
             
             <div class="wechat-section">
-                <h3>获取密钥</h3>
-                <p>扫码转账后，将截图发送给微信：teachAIGC</p>
+                <h3>🔑 获取密钥</h3>
+                <p>扫码转账后，将截图发送给微信：<strong>teachAIGC</strong></p>
                 <p>收到截图后，我们会验证并发送专业版密钥给您</p>
-                <p style="font-size: 12px; color: #888; margin-top: 10px;">仅限个人使用，禁止分享或转售</p>
-                <p style="font-size: 12px; color: #888; margin-top: 5px;">做题版功能即将上线，敬请期待</p>
+                <p style="font-size: 12px; color: #888; margin: 10px 0 5px;">⚠️ 仅限个人使用，禁止分享或转售</p>
+                <p style="font-size: 12px; color: #888;">✨ 做题版功能即将上线，敬请期待</p>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">提示信息</div>
 
     <script src="popup.js"></script>
 </body>
