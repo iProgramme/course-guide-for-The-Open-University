@@ -517,6 +517,7 @@ const ProVersion = {
 const ExtensionController = {
   // 添加一个标志来跟踪专业版授权状态
   isProVersionAuthorized: false,
+  currentApiKey: null,
 
   init: function() {
     // 监听来自弹窗的消息
@@ -539,11 +540,52 @@ const ExtensionController = {
       // 添加授权状态更新消息处理
       else if (request.action === 'updateProAuthStatus') {
         this.isProVersionAuthorized = request.authorized || false;
-        sendResponse({status: `授权状态已更新: ${this.isProVersionAuthorized}`});
+        this.currentApiKey = request.apiKey || null;
+        sendResponse({status: `授权状态已更新: ${this.isProVersionAuthorized}`, authorized: this.isProVersionAuthorized});
+      }
+      // 添加实时密钥验证功能
+      else if (request.action === 'validateApiKey') {
+        this.validateApiKey(request.apiKey).then(isValid => {
+          sendResponse({isValid: isValid});
+        });
+        // 返回true表示异步响应
+        return true;
       }
     });
     
     console.log('课程指南扩展: 控制器已初始化');
+  },
+
+  // 验证密钥的函数，调用后端API
+  validateApiKey: async function(apiKey) {
+    try {
+      const response = await fetch('http://localhost:3000/api/keys/verify?key=' + encodeURIComponent(apiKey), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // 更新本地状态
+        this.isProVersionAuthorized = true;
+        this.currentApiKey = apiKey;
+        return true;
+      } else {
+        // 密钥无效，更新本地状态
+        this.isProVersionAuthorized = false;
+        this.currentApiKey = null;
+        return false;
+      }
+    } catch (error) {
+      console.error('验证密钥时出错:', error);
+      // 网络错误时假设密钥无效
+      this.isProVersionAuthorized = false;
+      this.currentApiKey = null;
+      return false;
+    }
   }
 };
 

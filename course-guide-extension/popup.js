@@ -1,15 +1,34 @@
 // 课程指南扩展弹窗处理器
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 标签页切换功能
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 移除所有激活状态
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // 激活当前标签
+            button.classList.add('active');
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+    
     // 通过ID获取元素
     const basic2LevelBtn = document.getElementById('basic2LevelBtn');
     const basic3LevelBtn = document.getElementById('basic3LevelBtn');
     const proVersionBtn = document.getElementById('proVersionBtn');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const verifyKeyBtn = document.getElementById('verifyKeyBtn');
+    const statusDiv = document.getElementById('status');
     
     // 添加一个标志来跟踪密钥验证状态
     let isProVersionAuthorized = false;
+    let currentApiKey = '';
 
     // 为按钮添加点击事件监听器
     if (basic2LevelBtn) {
@@ -18,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chrome.tabs.sendMessage(tabs[0].id, {action: 'runBasic2Level'}, function(response) {
                     console.log(response.status);
                     // 可选：提供用户反馈
-                    document.getElementById('status').textContent = '基础版2级已启动！';
+                    statusDiv.textContent = '基础版2级已启动！';
                 });
             });
         });
@@ -30,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chrome.tabs.sendMessage(tabs[0].id, {action: 'runBasic3Level'}, function(response) {
                     console.log(response.status);
                     // 可选：提供用户反馈
-                    document.getElementById('status').textContent = '基础版3级已启动！';
+                    statusDiv.textContent = '基础版3级已启动！';
                 });
             });
         });
@@ -40,9 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         proVersionBtn.addEventListener('click', function() {
             // 在执行专业版功能前，再次检查授权状态
             if (!isProVersionAuthorized) {
-                document.getElementById('status').textContent = '请先验证密钥！';
-                // 重新隐藏专业版按钮
-                proVersionBtn.classList.add('hidden');
+                statusDiv.textContent = '请先验证密钥！';
                 return;
             }
             
@@ -50,89 +67,86 @@ document.addEventListener('DOMContentLoaded', function() {
                 chrome.tabs.sendMessage(tabs[0].id, {action: 'runProVersion'}, function(response) {
                     console.log(response.status);
                     // 可选：提供用户反馈
-                    document.getElementById('status').textContent = response.status;
+                    statusDiv.textContent = response.status;
                 });
             });
         });
     }
 
-    // 验证密钥功能
+    // 验证密钥功能 - 调用后端验证API
     if (verifyKeyBtn) {
         verifyKeyBtn.addEventListener('click', async function() {
             const key = apiKeyInput.value.trim();
             if (!key) {
-                document.getElementById('status').textContent = '请输入密钥';
+                statusDiv.textContent = '请输入密钥';
                 return;
             }
 
             try {
-                // 从localStorage获取originalStr字段
-                const originalStr = localStorage.getItem('originalStr');
+                statusDiv.textContent = '正在验证密钥...';
                 
-                // 模拟后端验证API调用
-                const isValid = await verifyApiKey(key, originalStr);
+                // 调用后端验证API
+                const response = await fetch('http://localhost:3000/api/keys/verify?key=' + encodeURIComponent(key), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
                 
-                if (isValid) {
-                    // 验证成功，设置授权标志并显示专业版按钮
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 验证成功，设置授权标志
                     isProVersionAuthorized = true;
-                    proVersionBtn.classList.remove('hidden');
-                    document.getElementById('status').textContent = '密钥验证成功！';
+                    currentApiKey = key; // 保存当前密钥
+                    statusDiv.textContent = '密钥验证成功！专业版已解锁';
                     // 清空输入框
                     apiKeyInput.value = '';
                     
                     // 向内容脚本发送授权状态更新
                     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true}, function(response) {
+                        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true, apiKey: key}, function(response) {
                             console.log('授权状态已发送到内容脚本:', response);
                         });
                     });
                 } else {
-                    // 验证失败，确保专业版按钮隐藏并重置授权状态
+                    // 验证失败，重置授权状态
                     isProVersionAuthorized = false;
-                    proVersionBtn.classList.add('hidden');
+                    currentApiKey = '';
                     
-                    // 同时向内容脚本发送未授权状态
+                    // 向内容脚本发送未授权状态
                     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false}, function(response) {
+                        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false, apiKey: null}, function(response) {
                             console.log('未授权状态已发送到内容脚本:', response);
                         });
                     });
                     
-                    document.getElementById('status').textContent = '密钥验证失败，请重试';
+                    statusDiv.textContent = data.error || '密钥验证失败，请重试';
                 }
             } catch (error) {
                 console.error('验证过程中出现错误:', error);
-                // 验证出错时也重置状态
+                // 验证出错时重置状态
                 isProVersionAuthorized = false;
-                proVersionBtn.classList.add('hidden');
+                currentApiKey = '';
                 
                 // 向内容脚本发送未授权状态
                 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false}, function(response) {
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false, apiKey: null}, function(response) {
                         console.log('错误状态已发送到内容脚本:', response);
                     });
                 });
                 
-                document.getElementById('status').textContent = '验证失败，请重试';
+                statusDiv.textContent = '网络错误，请检查后端服务是否运行';
             }
         });
     }
-
-    // 模拟后端API验证函数
-    async function verifyApiKey(key, originalStr) {
-        // 这里是模拟的后端验证逻辑
-        // 在实际实现中，这里会调用真实的后端API
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // 模拟验证 - 在实际应用中这会连接到真实后端
-                // 可以根据key和originalStr进行某种验证
-                console.log('验证密钥:', key, '原始字符串:', originalStr);
-                
-                // 模拟API验证成功的情况（实际应用中会有真实验证逻辑）
-                // 这里可以加入真实的验证逻辑
-                const isValid = key && key.length > 0; // 简单模拟验证
-                resolve(isValid);
-            }, 1000); // 模拟网络请求延迟
+    
+    // 回车键支持密钥验证
+    if (apiKeyInput) {
+        apiKeyInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyKeyBtn.click();
+            }
         });
     }
 });

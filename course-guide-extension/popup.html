@@ -6,13 +6,54 @@
     <style>
         body {
             width: 400px;
-            padding: 20px;
+            padding: 0;
             font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
         }
-        .version-btn {
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f5f5f5;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button.active {
+            color: #2196F3;
+            border-bottom: 3px solid #2196F3;
+            font-weight: bold;
+        }
+        
+        .tab-button:hover {
+            background-color: #e8e8e8;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .feature-btn {
             display: block;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             border: none;
             border-radius: 5px;
@@ -20,115 +61,171 @@
             color: white;
             font-size: 16px;
             cursor: pointer;
+            text-align: center;
         }
-        .version-btn:hover {
+        
+        .feature-btn:hover {
             background-color: #45a049;
         }
+        
         .pro-btn {
             background-color: #2196F3;
         }
+        
         .pro-btn:hover {
             background-color: #1976D2;
         }
-        .hidden {
-            display: none;
-        }
-        #status {
+        
+        .status {
             margin-top: 15px;
             text-align: center;
             font-style: italic;
             color: #666;
+            padding: 10px;
         }
-        .instructions {
-            font-size: 12px;
-            line-height: 1.4;
-            color: #555;
-            margin-bottom: 15px;
-            max-height: 250px;
-            overflow-y: auto;
+        
+        .guide-content {
+            line-height: 1.6;
         }
-        .key-input-container {
-            margin: 10px 0;
+        
+        .guide-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
         }
-        .key-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+        
+        .guide-content h3:first-child {
+            margin-top: 0;
         }
-        .verify-btn {
-            width: 100%;
-            padding: 8px;
-            margin-top: 8px;
-            background-color: #FF9800;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .verify-btn:hover {
-            background-color: #F57C00;
-        }
-        .image-container {
+        
+        .upgrade-content {
             text-align: center;
-            margin: 10px 0;
-            padding: 5px;
-            border: 1px solid #eee;
-            border-radius: 4px;
         }
-        .image-container img {
+        
+        .payment-section {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .payment-method {
+            margin: 15px 0;
+        }
+        
+        .payment-image {
             max-width: 100%;
             height: auto;
-            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .image-caption {
-            font-size: 11px;
-            color: #777;
-            margin-top: 5px;
+        
+        .price-tag {
+            display: inline-block;
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .wechat-section {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <h2 style="text-align: center;">课程指南</h2>
-    
-    <div class="instructions">
-        <p><strong>使用说明：</strong></p>
-        <p>1. 请先登录到开放大学并打开课程页面</p>
-        
-        <div class="image-container">
-            <img src="../1.png" alt="课程页面示例">
-            <div class="image-caption">课程页面示例</div>
-        </div>
-        
-        <p>2. 判断当前课程目录是2级还是3级</p>
-        
-        <div class="image-container">
-            <img src="../2.png" alt="2级目录示例">
-            <div class="image-caption">2级目录示例</div>
-        </div>
-        
-        <div class="image-container">
-            <img src="../3.png" alt="3级目录示例">
-            <div class="image-caption">3级目录示例</div>
-        </div>
-        
-        <p>3. 根据目录类型点击对应按钮</p>
-        <p>4. 脚本会自动完成当前章节所有内容</p>
-        <p>5. 完成后需手动切换到下一章</p>
+    <div class="tabs">
+        <button class="tab-button active" data-tab="features">功能</button>
+        <button class="tab-button" data-tab="guide">使用指南</button>
+        <button class="tab-button" data-tab="upgrade">升级专业版</button>
     </div>
     
-    <button id="basic2LevelBtn" class="version-btn">基础版 (2级)</button>
-    <button id="basic3LevelBtn" class="version-btn">基础版 (3级)</button>
-    
-    <div class="key-input-container">
-        <input type="password" id="apiKeyInput" class="key-input" placeholder="请输入专业版密钥">
-        <button id="verifyKeyBtn" class="verify-btn">验证密钥</button>
+    <!-- 功能标签页 -->
+    <div id="features" class="tab-content active">
+        <h3 style="text-align: center; margin-top: 0;">基础功能</h3>
+        <button id="basic2LevelBtn" class="feature-btn">基础版 (2级目录)</button>
+        <button id="basic3LevelBtn" class="feature-btn">基础版 (3级目录)</button>
+        
+        <div style="margin-top: 20px;">
+            <h3 style="margin-top: 0;">专业版功能</h3>
+            <div style="background-color: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <p>专业版支持自动完成所有章节，无需手动切换</p>
+            </div>
+            <button id="proVersionBtn" class="feature-btn pro-btn">专业版 (需验证密钥)</button>
+            <div style="margin-top: 10px;">
+                <input type="password" id="apiKeyInput" placeholder="请输入专业版密钥" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <button id="verifyKeyBtn" style="width: 100%; padding: 8px; background-color: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;">验证密钥</button>
+            </div>
+        </div>
+        
+        <div id="status" class="status">准备开始</div>
     </div>
     
-    <button id="proVersionBtn" class="version-btn pro-btn hidden">专业版</button>
+    <!-- 使用指南标签页 -->
+    <div id="guide" class="tab-content">
+        <div class="guide-content">
+            <h3>使用说明</h3>
+            <p>1. 请先登录到国家开放大学并打开课程页面</p>
+            
+            <h3>如何判断目录类型</h3>
+            <p>课程目录分为2级和3级两种结构：</p>
+            <p>• 2级目录：章节直接显示在侧边栏</p>
+            <p>• 3级目录：章节下还有子章节结构</p>
+            
+            <h3>使用步骤</h3>
+            <p>1. 根据课程目录类型点击对应按钮</p>
+            <p>2. 脚本会自动完成当前章节所有内容</p>
+            <p>3. 完成后需手动切换到下一章（专业版自动切换）</p>
+            
+            <h3>注意事项</h3>
+            <p>• 脚本仅限电脑使用，手机不可使用</p>
+            <p>• 脚本运行时请勿关闭页面或锁屏</p>
+            <p>• 可以同时打开其他应用（如微信、QQ等）</p>
+            <p>• 脚本不会自动做练习题</p>
+        </div>
+    </div>
     
-    <div id="status">准备开始</div>
+    <!-- 升级专业版标签页 -->
+    <div id="upgrade" class="tab-content">
+        <div class="upgrade-content">
+            <h3>升级专业版</h3>
+            <p>享受更智能的课程完成体验</p>
+            
+            <div class="payment-section">
+                <h3>收费标准</h3>
+                <p>
+                    <span class="price-tag">体验版 49元/月</span><br>
+                    自动完成单门课程所有章节无需手动切换章节，视频课程自动开启4倍速播放
+                </p>
+                <p>
+                    <span class="price-tag">永久版 199元</span><br>
+                    每学期都能使用，持续更新功能
+                </p>
+            </div>
+            
+            <div class="payment-method">
+                <h3>支付宝支付</h3>
+                <img src="payment/alipay.jpg" alt="支付宝收款码" class="payment-image" style="max-width: 200px;">
+            </div>
+            
+            <div class="payment-method">
+                <h3>微信支付</h3>
+                <img src="payment/wechat.jpg" alt="微信收款码" class="payment-image" style="max-width: 200px;">
+            </div>
+            
+            <div class="wechat-section">
+                <h3>获取密钥</h3>
+                <p>扫码转账后，将截图发送给微信：teachAIGC</p>
+                <p>收到截图后，我们会验证并发送专业版密钥给您</p>
+                <p style="font-size: 12px; color: #888; margin-top: 10px;">仅限个人使用，禁止分享或转售</p>
+                <p style="font-size: 12px; color: #888; margin-top: 5px;">做题版功能即将上线，敬请期待</p>
+            </div>
+        </div>
+    </div>
 
     <script src="popup.js"></script>
 </body>
