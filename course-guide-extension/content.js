@@ -283,7 +283,7 @@ const Basic3Level = {
 
   // 初始化3级自动化
   init: function() {
-    console.log('基础版3级: 脚本已启动');
+    console.log('基础版3级: 脚本已启动，请勿再点击页面任何按钮，若需中断请刷新页面。您现在可以切换其他应用（如微信，LOL等），脚本将在后台运行，但请勿关闭此页面。');
     
     const activeItem = document.querySelector('.full-screen-mode-sidebar-menu-item.active');
     if (activeItem) {
@@ -524,10 +524,10 @@ const ExtensionController = {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === 'runBasic2Level') {
         Basic2Level.processMenuItems();
-        sendResponse({status: '基础版2级已启动'});
+        sendResponse({status: '基础版2级已启动，请勿再点击页面任何按钮，若需中断请刷新页面。您现在可以切换其他应用（如微信，LOL等），脚本将在后台运行，但请勿关闭此页面。'});
       } else if (request.action === 'runBasic3Level') {
         Basic3Level.init();
-        sendResponse({status: '基础版3级已启动'});
+        sendResponse({status: '基础版3级已启动，请勿再点击页面任何按钮，若需中断请刷新页面。您现在可以切换其他应用（如微信，LOL等），脚本将在后台运行，但请勿关闭此页面。'});
       } else if (request.action === 'runProVersion') {
         // 检查专业版是否已授权
         if (!this.isProVersionAuthorized) {
@@ -535,7 +535,7 @@ const ExtensionController = {
           return;
         }
         ProVersion.startAutomation();
-        sendResponse({status: '专业版已启动'});
+        sendResponse({status: '专业版已启动，请勿再点击页面任何按钮，若需中断请刷新页面。您现在可以切换其他应用（如微信，LOL等），脚本将在后台运行，但请勿关闭此页面。'});
       } 
       // 添加授权状态更新消息处理
       else if (request.action === 'updateProAuthStatus') {
