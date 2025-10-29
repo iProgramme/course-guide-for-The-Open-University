@@ -3,7 +3,7 @@
 var baseUrl = [
   'https://course-guide-for-the-open-universit.vercel.app',
   'http://localhost:3000'
-][0]
+][1]
 // ================ 基础版 - 2级目录 ================
 // 基于 源文件-二级目录用这个.js
 const Basic2Level = {

@@ -109,6 +109,8 @@ const KeyManagement = () => {
     }
   };
 
+  
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '无限制';
     return new Date(dateString).toLocaleString('zh-CN');
@@ -188,6 +190,7 @@ const KeyManagement = () => {
         {/* 密钥生成表单 */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-bold mb-4 text-gray-800">生成新密钥</h2>
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -295,7 +298,7 @@ const KeyManagement = () => {
               </button>
             </div>
             
-            {loading ? (
+            {loading && activeKeys.length === 0 ? (
               <div className="text-center py-6">
                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
               </div>

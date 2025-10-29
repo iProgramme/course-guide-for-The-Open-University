@@ -2,7 +2,7 @@
 var baseUrl = [
   'https://course-guide-for-the-open-universit.vercel.app',
   'http://localhost:3000'
-][0]
+][1]
 // 显示toast通知的函数
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
@@ -11,7 +11,7 @@ function showToast(message, type = 'info') {
     
     setTimeout(() => {
         toast.className = toast.className.replace('show', '');
-    }, 5000);
+    }, 10000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const basic2LevelBtn = document.getElementById('basic2LevelBtn');
     const basic3LevelBtn = document.getElementById('basic3LevelBtn');
     const proVersionBtn = document.getElementById('proVersionBtn');
+    const freeTrialBtn = document.getElementById('freeTrialBtn');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const verifyKeyBtn = document.getElementById('verifyKeyBtn');
     const keyInputContainer = document.querySelector('.key-input-container');
@@ -65,6 +66,142 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('基础版3级已启动！', 'success');
                 });
             });
+        });
+    }
+
+    // 免费试用按钮事件监听器
+    if (freeTrialBtn) {
+        freeTrialBtn.addEventListener('click', async function() {
+            try {
+                showToast('正在获取免费试用密钥...', 'info');
+                
+                // 从当前页面获取originalStr字段
+                let originalStr = await getOriginalStrFromPage();
+                
+                if (!originalStr) {
+                    showToast('无法获取当前页面的验证信息，请确保：\n1. 页面已完全加载\n2. 页面包含验证信息\n3. 页面URL在允许的域名范围内', 'error');
+                    return;
+                }
+                
+                // 调用后端免费试用API
+                const response = await fetch(baseUrl + '/api/keys/trial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        originalStr: originalStr
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 获取到试用密钥，但需要先验证密钥的有效性
+                    const trialKey = data.data.key;
+                    
+                    try {
+                        // 从当前页面获取originalStr字段用于验证
+                        let originalStrForValidation = await getOriginalStrFromPage();
+                        
+                        if (!originalStrForValidation) {
+                            showToast('无法获取当前页面的验证信息，无法验证密钥有效性', 'error');
+                            return;
+                        }
+                        
+                        // 验证获取到的试用密钥是否有效
+                        const validateResponse = await fetch(baseUrl + '/api/keys/validate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                key: trialKey,
+                                originalStr: originalStrForValidation
+                            })
+                        });
+                        
+                        const validateData = await validateResponse.json();
+                        
+                        if (validateData.success) {
+                            // 密钥有效，更新专业版授权状态
+                            isProVersionAuthorized = true;
+                            currentApiKey = trialKey; // 保存试用密钥
+                            
+                            // 更新专业版按钮的状态显示
+                            const proVersionBtn = document.getElementById('proVersionBtn');
+                            if (proVersionBtn) {
+                                // 修改按钮文本以反映已授权状态
+                                const spans = proVersionBtn.querySelectorAll('span');
+                                if (spans.length >= 2) {
+                                    spans[1].textContent = '(已授权使用)';
+                                    spans[1].style.color = '#4CAF50';
+                                }
+                            }
+                            
+                            showToast('免费试用已激活！', 'success');
+                            
+                            // 隐藏密钥输入区域（因为已经有密钥了）
+                            if (keyInputContainer) {
+                                keyInputContainer.style.display = 'none';
+                            }
+                            
+                            // 向内容脚本发送授权状态更新
+                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                                chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true, apiKey: trialKey}, function(response) {
+                                    console.log('试用授权状态已发送到内容脚本:', response);
+                                });
+                            });
+                            
+                            // 启动专业版功能
+                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                                chrome.tabs.sendMessage(tabs[0].id, {action: 'runProVersion'}, function(response) {
+                                    console.log(response.status);
+                                    showToast('专业版已启动', 'success');
+                                });
+                            });
+                        } else {
+                            // 密钥无效（已过期或被禁用）
+                            isProVersionAuthorized = false;
+                            currentApiKey = '';
+                            
+                            // 向内容脚本发送未授权状态
+                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                                chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false, apiKey: null}, function(response) {
+                                    console.log('未授权状态已发送到内容脚本:', response);
+                                });
+                            });
+                            
+                            let invalidReason = validateData.error || '密钥无效';
+                            if (invalidReason.includes('过期')) {
+                                showToast('免费试用已过期，请联系微信购买新的密钥：teachAIGC', 'error');
+                            } else if (invalidReason.includes('禁用')) {
+                                showToast('密钥已被禁用，请联系微信购买新的密钥：teachAIGC', 'error');
+                            } else {
+                                showToast(`获取的试用密钥无效：${invalidReason}`, 'error');
+                            }
+                        }
+                    } catch (validationError) {
+                        console.error('验证试用密钥时出错:', validationError);
+                        showToast('验证试用密钥时出错，请重试', 'error');
+                    }
+                } else {
+                    console.error('API响应错误:', data);
+                    let errorMessage = data.error || '获取免费试用失败';
+                    
+                    // 如果是500错误，提供更明确的错误信息
+                    if (response.status === 500) {
+                        errorMessage = `服务器错误 (${response.status}): ${errorMessage}。可能原因：\n1. 后端服务未启动\n2. 数据库连接配置错误\n3. 环境变量未设置\n\n请确保后端服务已启动并正确配置环境变量`;
+                    } else if (response.status === 404) {
+                        errorMessage = 'API端点未找到，请检查后端服务是否正确部署';
+                    }
+                    
+                    showToast(errorMessage, 'error');
+                }
+            } catch (error) {
+                console.error('获取免费试用过程中出现错误:', error);
+                showToast('网络错误，请检查后端服务是否运行', 'error');
+            }
         });
     }
 
