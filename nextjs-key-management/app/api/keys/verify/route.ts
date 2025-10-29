@@ -72,7 +72,10 @@ export async function POST(request: Request) {
 
     // 验证成功，不返回密钥详细信息，只返回成功状态
     return NextResponse.json({ 
-      success: true 
+      success: true,
+       // 还返回并生成一个任意的字符串，用来迷惑用户，防止用户直接模拟一个后端绕过验证
+      str: 'sk_'+Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15),
+    
     });
   } catch (error) {
     console.error('验证密钥时出错:', error);

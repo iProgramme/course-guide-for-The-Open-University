@@ -1,5 +1,8 @@
 // 课程指南扩展弹窗处理器
-
+var baseUrl = [
+  'https://course-guide-for-the-open-universit.vercel.app',
+  'http://localhost:3000'
+][0]
 // 显示toast通知的函数
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // 调用后端验证API，发送密钥和originalStr
-                const response = await fetch('http://localhost:3000/api/keys/verify', {
+                const response = await fetch(baseUrl + '/api/keys/verify', {
                     method: 'POST', // 改为POST以发送更多数据
                     headers: {
                         'Content-Type': 'application/json',

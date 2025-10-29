@@ -1,6 +1,9 @@
 // 课程指南扩展 - 综合脚本
 // 该文件包含所有三个版本：基础版（2级），基础版（3级）和专业版
-
+var baseUrl = [
+  'https://course-guide-for-the-open-universit.vercel.app',
+  'http://localhost:3000'
+][0]
 // ================ 基础版 - 2级目录 ================
 // 基于 源文件-二级目录用这个.js
 const Basic2Level = {
@@ -568,7 +571,7 @@ const ExtensionController = {
   // 验证密钥的函数，调用后端API
   validateApiKey: async function(apiKey) {
     try {
-      const response = await fetch('http://localhost:3000/api/keys/verify?key=' + encodeURIComponent(apiKey), {
+      const response = await fetch(baseUrl + '/api/keys/verify?key=' + encodeURIComponent(apiKey), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

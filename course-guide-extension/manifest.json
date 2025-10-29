@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Course Guide Extension",
+  "name": "国开大学上课辅助",
   "version": "1.0",
   "description": "Automates course completion for Open University",
   "permissions": [
@@ -12,11 +12,12 @@
   "host_permissions": [
     "http://localhost:3000/*",
     "http://127.0.0.1:3000/*",
+    "https://course-guide-for-the-open-universit.vercel.app/*",
     "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Course Guide"
+    "default_title": "国开大学辅助"
   },
   "content_scripts": [
     {
