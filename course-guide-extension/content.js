@@ -554,12 +554,77 @@ const ExtensionController = {
         // 返回true表示异步响应
         return true;
       }
-      // 添加获取当前页面originalStr字段的功能
+      // 添加获取当前页面globalData.user中的用户信息的功能（之前是originalStr）
       else if (request.action === 'getOriginalStr') {
         // 现在直接在popup.js中通过chrome.scripting.executeScript获取
-        // 这里可以返回一个空值或错误信息
-        sendResponse({originalStr: '', error: '不再通过content script获取'});
-        return false;
+        // 但这里仍然可以提供一个备用方法
+        try {
+          let globalData = null;
+          
+          // 首先检查 window.globalData
+          if (window && typeof window.globalData !== 'undefined') {
+            globalData = window.globalData;
+          } 
+          
+          // 如果未找到，检查其他可能的全局变量
+          if (!globalData) {
+            // 首先检查 window 上的对象是否包含用户信息
+            for (const key of Object.keys(window)) {
+              try {
+                const obj = window[key];
+                if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                  // 检查该对象是否包含user对象
+                  if (obj.user && typeof obj.user === 'object') {
+                    // 检查user对象是否包含name和userNo
+                    if (obj.user.name && obj.user.userNo) {
+                      globalData = obj;
+                      break;
+                    }
+                  }
+                }
+              } catch (e) {
+                // 跨域错误或其他访问错误
+                continue;
+              }
+            }
+          }
+          
+          if (globalData && typeof globalData === 'object') {
+            // 检查 globalData.user 对象
+            if (globalData.user && typeof globalData.user === 'object') {
+              const user = globalData.user;
+              
+              // 获取 name 和 userNo
+              const userName = user.name || user.userName || user.Name || user.username || user.nickName || user.displayName || '';
+              const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || user.id || user.userId || user.StudentNo || '';
+              
+              if (userName && userNo) {
+                // 成功找到用户信息
+                console.log('content script: 成功从globalData.user获取用户信息:', {name: userName, userNo: userNo});
+                sendResponse({originalStr: userName + '|' + userNo, error: null});
+              } else {
+                console.log('content script: globalData.user存在但用户信息不完整', {name: userName, userNo: userNo});
+                // 尝试返回已有的信息
+                sendResponse({originalStr: userName || userNo || JSON.stringify(user) || '', error: null});
+              }
+            } else {
+              console.log('content script: 未找到 globalData.user 对象');
+              if (globalData.name && globalData.userNo) {
+                // 检查 globalData 本身是否直接包含用户信息
+                sendResponse({originalStr: globalData.name + '|' + globalData.userNo, error: null});
+              } else {
+                console.log('content script: globalData.user不存在，返回globalData对象');
+                sendResponse({originalStr: JSON.stringify(globalData) || '', error: null});
+              }
+            }
+          } else {
+            console.log('content script: 未找到 globalData 对象或不是对象类型');
+            sendResponse({originalStr: '', error: '未找到包含用户信息的对象'});
+          }
+        } catch (error) {
+          sendResponse({originalStr: '', error: '获取globalData.user失败: ' + error.message});
+        }
+        return true; // 返回true表示异步响应
       }
     });
     

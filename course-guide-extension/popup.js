@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 showToast('正在获取免费试用密钥...', 'info');
                 
-                // 从当前页面获取originalStr字段
+                // 从当前页面获取globalData字段（之前为originalStr）
                 let originalStr = await getOriginalStrFromPage();
                 
                 if (!originalStr) {
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const trialKey = data.data.key;
                     
                     try {
-                        // 从当前页面获取originalStr字段用于验证
+                        // 从当前页面获取globalData字段用于验证（之前为originalStr）
                         let originalStrForValidation = await getOriginalStrFromPage();
                         
                         if (!originalStrForValidation) {
@@ -234,10 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 showToast('正在验证密钥...', 'info');
                 
-                // 从当前页面获取originalStr字段
+                // 从当前页面获取globalData字段（之前为originalStr）
                 let originalStr = await getOriginalStrFromPage();
                 
-                console.log('第一次尝试获取的originalStr:', originalStr);
+                console.log('第一次尝试获取的globalData (作为originalStr):', originalStr);
                 
                 // 如果第一次尝试失败，可以尝试备用方法
                 if (!originalStr) {
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 但现在我们先记录错误并停止
                 }
                 
-                console.log('最终获取到的originalStr:', originalStr);
+                console.log('最终获取到的globalData (作为originalStr):', originalStr);
                 console.log('originalStr类型:', typeof originalStr);
                 console.log('originalStr长度:', originalStr ? originalStr.length : 0);
                 
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // 调用后端验证API，发送密钥和originalStr
+                // 调用后端验证API，发送密钥和globalData（以originalStr字段名）
                 const response = await fetch(baseUrl + '/api/keys/verify', {
                     method: 'POST', // 改为POST以发送更多数据
                     headers: {
@@ -318,8 +318,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 从当前页面获取originalStr的函数
-    async function getOriginalStrFromPage() {
+    // 专门从globalData.user获取用户信息的函数
+    async function getGlobalDataFromPage() {
         console.log('开始查询活动标签页...');
         
         try {
@@ -344,29 +344,143 @@ document.addEventListener('DOMContentLoaded', function() {
             // 检查标签页状态，如果是loading状态，等待一段时间再获取
             if (tab.status !== 'complete') {
                 console.log('标签页尚未加载完成，当前状态:', tab.status);
-                // 等待1秒钟再尝试
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // 等待3秒钟再尝试，确保页面完全加载
+                await new Promise(resolve => setTimeout(resolve, 3000));
             }
             
-            // 直接使用chrome.scripting.executeScript获取页面的localStorage
-            console.log('尝试直接通过scripting API获取originalStr，tabId:', tab.id);
-            
-            const results = await new Promise((resolve, reject) => {
-                try {
-                    chrome.scripting.executeScript({
-                        target: {tabId: tab.id},
-                        func: () => {
-                            try {
-                                // console.log('在页面上下文中执行，尝试获取originalStr');
-                                const value = localStorage.getItem('originalStr');
-                                // todo
-                                // console.log('在页面上下文中获取到的originalStr:', value);
-                                return value || '';
-                            } catch (e) {
-                                console.error('在页面上下文中获取originalStr时出错:', e);
-                                return '';
+            // 方法1: 尝试使用chrome.scripting.executeScript（现代方法）
+            try {
+                const results = await chrome.scripting.executeScript({
+                    target: {tabId: tab.id},
+                    world: 'MAIN',  // 在主页面上下文中运行，可以访问所有全局变量
+                    func: () => {
+                        // 尝试多种方式获取 globalData
+                        let globalData = null;
+                        
+                        // 首先检查 window.globalData
+                        if (window && typeof window.globalData !== 'undefined') {
+                            globalData = window.globalData;
+                            console.log('找到 window.globalData');
+                        }
+                        
+                        // 如果没找到，检查其他可能的对象
+                        if (!globalData) {
+                            // 遍历window对象的属性，寻找包含user信息的对象
+                            for (const key in window) {
+                                if (window.hasOwnProperty(key)) {
+                                    try {
+                                        const obj = window[key];
+                                        if (obj && typeof obj === 'object' && !Array.isArray(obj) && 
+                                            obj.user && typeof obj.user === 'object' && 
+                                            obj.user.name && obj.user.userNo) {
+                                            globalData = obj;
+                                            console.log(`在 window.${key} 中找到用户信息`);
+                                            break;
+                                        }
+                                    } catch (e) {
+                                        // 跨域错误，继续下一个
+                                        continue;
+                                    }
+                                }
                             }
                         }
+                        
+                        // 如果找到了包含用户信息的对象
+                        if (globalData && typeof globalData === 'object' && globalData.user) {
+                            const user = globalData.user;
+                            
+                            // 获取 name 和 userNo，支持多种可能的字段名
+                            const userName = user.name || user.userName || user.Name || user.username || 
+                                           user.nickName || user.displayName || user.realName || '';
+                            const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || 
+                                         user.id || user.userId || user.StudentNo || user.userNumber || '';
+                            
+                            if (userName && userNo) {
+                                console.log('成功获取用户信息:', {name: userName, no: userNo});
+                                return userName + '|' + userNo;
+                            } else {
+                                // 用户信息不完整但有部分信息
+                                return userName || userNo || JSON.stringify(user) || '';
+                            }
+                        } else if (globalData && globalData.name && globalData.userNo) {
+                            // 检查globalData本身是否包含用户信息
+                            return globalData.name + '|' + globalData.userNo;
+                        } else {
+                            console.log('未找到包含用户信息的对象');
+                            return '';
+                        }
+                    }
+                });
+                
+                if (results && results.length > 0 && results[0].result) {
+                    console.log('通过MAIN world executeScript成功获取信息:', results[0].result);
+                    return results[0].result;
+                }
+            } catch (executeError) {
+                console.error('executeScript方法失败:', executeError);
+            }
+            
+            // 如果上述方法都失败，尝试使用旧版的 chrome.tabs.executeScript 方法
+            // 这种方法可以绕过某些CSP限制
+            try {
+                const result = await new Promise((resolve, reject) => {
+                    chrome.tabs.executeScript(tab.id, {
+                        code: `
+                            (function() {
+                                // 尝试获取 globalData 变量的值
+                                let result = '';
+                                
+                                // 检查 window.globalData
+                                if (window && typeof window.globalData !== 'undefined' && 
+                                    window.globalData.user && 
+                                    window.globalData.user.name && 
+                                    window.globalData.user.userNo) {
+                                    result = window.globalData.user.name + '|' + window.globalData.user.userNo;
+                                } 
+                                // 遍历window对象查找包含用户信息的对象
+                                else {
+                                    for (let key in window) {
+                                        if (window.hasOwnProperty(key)) {
+                                            try {
+                                                const obj = window[key];
+                                                if (obj && typeof obj === 'object' && !Array.isArray(obj) && 
+                                                    obj.user && typeof obj.user === 'object' && 
+                                                    obj.user.name && obj.user.userNo) {
+                                                    result = obj.user.name + '|' + obj.user.userNo;
+                                                    break;
+                                                }
+                                            } catch (e) {
+                                                // 跳过跨域错误
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // 如果仍未找到，并且页面上有 globalData 变量（但不在window上）
+                                if (!result) {
+                                    try {
+                                        // 这部分不会在CSP限制下工作，但我们尝试其他方式
+                                        // 检查页面中的script标签
+                                        const scripts = document.querySelectorAll('script');
+                                        for (const script of scripts) {
+                                            if (script.textContent && 
+                                                (script.textContent.includes('globalData') || 
+                                                 script.textContent.includes('user') || 
+                                                 script.textContent.includes('name') || 
+                                                 script.textContent.includes('userNo'))) {
+                                                // 尝试从内联脚本中提取变量（如果可能）
+                                                // 这种方式无法直接提取，但可以记录相关信息
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.log('检查页面script标签时出错:', e.message);
+                                    }
+                                }
+                                
+                                return result;
+                            })();
+                        `
                     }, (results) => {
                         if (chrome.runtime.lastError) {
                             reject(chrome.runtime.lastError);
@@ -374,22 +488,27 @@ document.addEventListener('DOMContentLoaded', function() {
                             resolve(results);
                         }
                     });
-                } catch (error) {
-                    reject(error);
+                });
+                
+                if (result && result[0]) {
+                    console.log('通过 tabs.executeScript 成功获取信息:', result[0]);
+                    return result[0];
                 }
-            });
-            
-            if (results && results.length > 0 && results[0].result !== undefined) {
-                console.log('直接执行脚本成功获取originalStr:', results[0].result);
-                return results[0].result || '';
-            } else {
-                console.error('直接执行脚本未返回预期结果:', results);
-                return '';
+            } catch (tabError) {
+                console.error('tabs.executeScript 方法失败:', tabError);
             }
+            
+            console.error('所有方法都未能获取到globalData变量');
+            return '';
         } catch (error) {
-            console.error('获取originalStr时出错:', error);
+            console.error('获取globalData.user信息时出错:', error);
             return '';
         }
+    }
+    
+    // 保留原有函数名以便向后兼容，但内部调用新的globalData获取函数
+    async function getOriginalStrFromPage() {
+        return await getGlobalDataFromPage();
     }
     
     // 回车键支持密钥验证
