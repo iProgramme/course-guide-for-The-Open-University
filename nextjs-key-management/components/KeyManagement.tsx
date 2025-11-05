@@ -109,8 +109,6 @@ const KeyManagement = () => {
     }
   };
 
-  
-
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '无限制';
     return new Date(dateString).toLocaleString('zh-CN');
@@ -118,7 +116,7 @@ const KeyManagement = () => {
 
   const getUsageStatus = (key: ApiKey) => {
     if (key.maxUses === -1) {
-      return `已使用 ${key.usedCount} 次`;
+      return `${key.usedCount} 次`;
     }
     return `${key.usedCount}/${key.maxUses}`;
   };
@@ -154,28 +152,67 @@ const KeyManagement = () => {
     }
   };
 
-  // 筛选有效和无效的密钥
-  const activeKeys = keys.filter(key => {
-    if (!key.isActive) return false;
-    
-    // 检查是否过期
-    if (key.expiresAt && new Date() > new Date(key.expiresAt)) {
-      return false;
-    }
-    
-    // 检查是否达到使用次数限制
-    if (key.maxUses !== -1 && key.usedCount >= key.maxUses) {
-      return false;
-    }
-    
-    return true;
-  });
-  
-  const inactiveKeys = keys.filter(key => !activeKeys.includes(key));
+  const [activeTab, setActiveTab] = useState<'list' | 'generate'>('list'); // 新增选项卡状态
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all'); // 新增筛选状态
+  const [searchQuery, setSearchQuery] = useState(''); // 新增搜索状态
 
   if (error) {
     return <div className="text-red-500 p-4">错误: {error}</div>;
   }
+
+  // 筛选密钥
+  const filteredKeys = keys.filter(key => {
+    // 根据状态筛选
+    if (filter === 'active') {
+      // 有效密钥：isActive为true，且不过期，且未达到使用次数限制
+      if (!key.isActive) return false;
+      if (key.expiresAt && new Date() > new Date(key.expiresAt)) return false;
+      if (key.maxUses !== -1 && key.usedCount >= key.maxUses) return false;
+    } else if (filter === 'inactive') {
+      // 无效密钥：isActive为false，或已过期，或已达到使用次数限制
+      if (key.isActive && 
+          !(key.expiresAt && new Date() > new Date(key.expiresAt)) && 
+          !(key.maxUses !== -1 && key.usedCount >= key.maxUses)) {
+        return false;
+      }
+    }
+    
+    // 搜索查询 - 模糊匹配生成参数
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const paramValue = key.originalParams ? 
+        (typeof key.originalParams === 'string' ? key.originalParams : JSON.stringify(key.originalParams)).toLowerCase() 
+        : '';
+      if (!paramValue.includes(query)) return false;
+    }
+    
+    return true;
+  });
+
+  // 根据状态对密钥进行分类（用于显示状态）
+  const getKeyStatus = (key: ApiKey) => {
+    let status = '未知';
+    let statusColor = 'bg-gray-100 text-gray-800';
+    
+    if (key.isActive) {
+      // 检查是否过期或用完次数
+      if (key.expiresAt && new Date() > new Date(key.expiresAt)) {
+        status = '已过期';
+        statusColor = 'bg-red-100 text-red-800';
+      } else if (key.maxUses !== -1 && key.usedCount >= key.maxUses) {
+        status = '已达上限';
+        statusColor = 'bg-orange-100 text-orange-800';
+      } else {
+        status = '有效';
+        statusColor = 'bg-green-100 text-green-800';
+      }
+    } else {
+      status = '已禁用';
+      statusColor = 'bg-gray-100 text-gray-800';
+    }
+    
+    return { status, statusColor };
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -186,20 +223,195 @@ const KeyManagement = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 密钥生成表单 */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">生成新密钥</h2>
+      {/* 选项卡按钮 */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          className={`py-2 px-4 font-medium text-sm ${
+            activeTab === 'list'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('list')}
+        >
+          密钥列表
+        </button>
+        <button
+          className={`py-2 px-4 font-medium text-sm ${
+            activeTab === 'generate'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('generate')}
+        >
+          生成密钥
+        </button>
+      </div>
+
+      {/* 密钥列表选项卡 */}
+      {activeTab === 'list' && (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+            <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 md:border-b-0 md:pb-0">密钥列表 (共 {filteredKeys.length} 个)</h2>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* 筛选按钮 */}
+              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                {[
+                  { key: 'all', label: '全部' },
+                  { key: 'active', label: '有效密钥' },
+                  { key: 'inactive', label: '无效密钥' },
+                ].map((option) => (
+                  <button
+                    key={option.key}
+                    className={`px-3 py-1.5 text-sm ${
+                      filter === option.key
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setFilter(option.key as any)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              
+              <button 
+                onClick={fetchKeys}
+                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors whitespace-nowrap"
+              >
+                刷新
+              </button>
+            </div>
+          </div>
+
+          {/* 搜索框 */}
+          <div className="mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="通过生成参数搜索..."
+                className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {loading && keys.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : filteredKeys.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {searchQuery ? '未找到匹配的密钥' : '暂无密钥'}
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-24">状态</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-32">密钥</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-28">类型</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-36">生成时间</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-amber-50 w-40">生成参数</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-36">有效期</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-20">使用次数</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredKeys.map((key) => {
+                    const { status, statusColor } = getKeyStatus(key);
+                    
+                    return (
+                      <tr key={key.id} className="hover:bg-blue-50 transition-colors duration-150">
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900">
+                            <span className={`px-2 py-1 text-xs rounded-full ${statusColor} inline-block min-w-[60px] text-center`}>
+                              {status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 font-mono text-xs break-all max-w-[80px]">{key.key.substring(0, 15)}...</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 text-sm">{key.keyType}</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 text-sm">{formatDate(key.createdAt)}</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200 bg-amber-50">
+                          <div className="text-gray-900 text-xs break-all max-w-[100px]">
+                            {key.originalParams ? (
+                              typeof key.originalParams === 'string' ? key.originalParams : JSON.stringify(key.originalParams)
+                            ) : '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 text-sm">{formatDate(key.expiresAt)}</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 text-sm">{getUsageStatus(key)}</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap">
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => copyToClipboard(key.key)}
+                              className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                              title="复制密钥"
+                            >
+                              复制
+                            </button>
+                            {key.isActive ? (
+                              <button
+                                onClick={() => updateKeyStatus(key.id, false)}
+                                className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                title="禁用密钥"
+                              >
+                                禁用
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => updateKeyStatus(key.id, true)}
+                                className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                title="启用密钥"
+                              >
+                                启用
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 生成密钥选项卡 */}
+      {activeTab === 'generate' && (
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <h2 className="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">生成新密钥</h2>
+          
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 密钥类型 *
               </label>
               <select
                 value={keyType}
                 onChange={(e) => setKeyType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 required
               >
                 <option value="">请选择密钥类型</option>
@@ -208,212 +420,72 @@ const KeyManagement = () => {
                 ))}
                 <option value="custom">自定义类型</option>
               </select>
-              {keyType === 'custom' && (
-                <input
-                  type="text"
-                  value={keyType}
-                  onChange={(e) => setKeyType(e.target.value)}
-                  className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="请输入自定义密钥类型"
-                />
-              )}
-              <p className="mt-1 text-xs text-gray-500">选择或输入密钥用途，如国开大学-pro、国开大学-刷题等</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 有效期 (可选)
               </label>
               <input
                 type="datetime-local"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
-              <p className="mt-1 text-xs text-gray-500">密钥过期时间，留空表示永不过期</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 使用次数 (-1表示无限制)
               </label>
               <input
                 type="number"
                 value={maxUses}
                 onChange={(e) => setMaxUses(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 min="-1"
                 placeholder="-1表示无限制"
               />
-              <p className="mt-1 text-xs text-gray-500">密钥可使用次数，-1表示无限制</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                生成参数 (可选)
-              </label>
-              <input
-                type="text"
-                value={originalParams}
-                onChange={(e) => setOriginalParams(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="例如: 231312+郭减"
-              />
-              <p className="mt-1 text-xs text-gray-500">用于生成密钥的参数（支持纯字符串或JSON格式）</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 使用人 (可选)
               </label>
               <input
                 type="text"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 placeholder="使用人姓名或标识"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-            >
-              生成密钥
-            </button>
-          </form>
-        </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                生成参数 (可选)
+              </label>
+              <input
+                type="text"
+                value={originalParams}
+                onChange={(e) => setOriginalParams(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                placeholder="例如: 231312+郭减"
+              />
+              <p className="mt-1 text-xs text-gray-500">用于生成密钥的参数（支持纯字符串或JSON格式）</p>
+            </div>
 
-        {/* 密钥列表 */}
-        <div className="space-y-6">
-          {/* 有效密钥列表 */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">有效密钥 ({activeKeys.length})</h2>
-              <button 
-                onClick={fetchKeys}
-                className="text-sm bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md transition-colors"
+            <div className="md:col-span-2 flex justify-end">
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-sm"
               >
-                刷新
+                生成密钥
               </button>
             </div>
-            
-            {loading && activeKeys.length === 0 ? (
-              <div className="text-center py-6">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : activeKeys.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
-                暂无有效密钥
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">密钥</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用情况</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {activeKeys.map((key) => (
-                      <tr key={key.id} className="text-sm hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <div className="text-gray-900 font-mono text-xs break-all max-w-[120px]">{key.key.substring(0, 15)}...</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-gray-900">{key.keyType}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-gray-900">{getUsageStatus(key)}</div>
-                          <div className="text-xs text-gray-500">
-                            有效期: {formatDate(key.expiresAt)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex space-x-1">
-                            <button
-                              onClick={() => copyToClipboard(key.key)}
-                              className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition-colors"
-                              title="复制密钥"
-                            >
-                              复制
-                            </button>
-                            <button
-                              onClick={() => updateKeyStatus(key.id, false)}
-                              className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors"
-                              title="禁用密钥"
-                            >
-                              禁用
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* 无效密钥列表 */}
-          {inactiveKeys.length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">无效密钥 ({inactiveKeys.length})</h2>
-              
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">密钥</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {inactiveKeys.map((key) => {
-                      let status = '未知';
-                      if (!key.isActive) status = '已禁用';
-                      else if (key.expiresAt && new Date() > new Date(key.expiresAt)) status = '已过期';
-                      else if (key.maxUses !== -1 && key.usedCount >= key.maxUses) status = '已达使用次数上限';
-                      
-                      return (
-                        <tr key={key.id} className="text-sm hover:bg-gray-50">
-                          <td className="px-4 py-3">
-                            <div className="text-gray-900 font-mono text-xs break-all max-w-[120px]">{key.key.substring(0, 15)}...</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-gray-900">{key.keyType}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-gray-900">
-                              <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
-                                {status}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={() => updateKeyStatus(key.id, true)}
-                              className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition-colors"
-                              title="启用密钥"
-                            >
-                              启用
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          </form>
         </div>
-      </div>
+      )}
     </div>
   );
 };

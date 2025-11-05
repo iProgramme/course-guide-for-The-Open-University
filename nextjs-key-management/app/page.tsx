@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import KeyManagement from '@/components/KeyManagement';
-import KeyValidator from '@/components/KeyValidator';
 import BulkKeyGenerator from '@/components/BulkKeyGenerator';
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'manage' | 'validate' | 'bulk'>('manage');
+  const [activeTab, setActiveTab] = useState<'manage' | 'bulk'>('manage');
 
   useEffect(() => {
     setIsMounted(true);
@@ -44,16 +42,6 @@ export default function Home() {
                   密钥管理
                 </button>
                 <button
-                  onClick={() => setActiveTab('validate')}
-                  className={`py-4 px-6 text-center font-medium text-sm ${
-                    activeTab === 'validate'
-                      ? 'border-b-2 border-blue-500 text-blue-600'
-                      : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  密钥验证
-                </button>
-                <button
                   onClick={() => setActiveTab('bulk')}
                   className={`py-4 px-6 text-center font-medium text-sm ${
                     activeTab === 'bulk'
@@ -70,8 +58,6 @@ export default function Home() {
             <div className="p-6">
               {activeTab === 'manage' ? (
                 <KeyManagement />
-              ) : activeTab === 'validate' ? (
-                <KeyValidator />
               ) : (
                 <BulkKeyGenerator />
               )}
