@@ -566,26 +566,13 @@ const ExtensionController = {
             globalData = window.globalData;
           } 
           
-          // 如果未找到，检查其他可能的全局变量
+          // 如果 window.globalData 不存在，尝试直接评估 globalData 变量
           if (!globalData) {
-            // 首先检查 window 上的对象是否包含用户信息
-            for (const key of Object.keys(window)) {
-              try {
-                const obj = window[key];
-                if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-                  // 检查该对象是否包含user对象
-                  if (obj.user && typeof obj.user === 'object') {
-                    // 检查user对象是否包含name和userNo
-                    if (obj.user.name && obj.user.userNo) {
-                      globalData = obj;
-                      break;
-                    }
-                  }
-                }
-              } catch (e) {
-                // 跨域错误或其他访问错误
-                continue;
-              }
+            try {
+              // 使用 Function 构造器安全地评估变量
+              globalData = new Function('return globalData')();
+            } catch (e) {
+              console.log('content script: 无法通过直接评估获取 globalData:', e.message);
             }
           }
           
@@ -595,8 +582,8 @@ const ExtensionController = {
               const user = globalData.user;
               
               // 获取 name 和 userNo
-              const userName = user.name || user.userName || user.Name || user.username || user.nickName || user.displayName || '';
-              const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || user.id || user.userId || user.StudentNo || '';
+              const userName = user.name || user.userName || user.Name || user.username || '';
+              const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || user.id || '';
               
               if (userName && userNo) {
                 // 成功找到用户信息
@@ -619,7 +606,7 @@ const ExtensionController = {
             }
           } else {
             console.log('content script: 未找到 globalData 对象或不是对象类型');
-            sendResponse({originalStr: '', error: '未找到包含用户信息的对象'});
+            sendResponse({originalStr: '', error: '未找到 globalData 变量'});
           }
         } catch (error) {
           sendResponse({originalStr: '', error: '获取globalData.user失败: ' + error.message});

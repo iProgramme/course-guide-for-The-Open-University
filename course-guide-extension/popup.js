@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 获取到试用密钥，但需要先验证密钥的有效性
+                    // 获取到试用密钥，可能是新生成的，也可能是现有的有效密钥
                     const trialKey = data.data.key;
                     
                     try {
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }
                             
-                            showToast('免费试用已激活！', 'success');
+                            showToast(data.data.message || '免费试用已激活！', 'success');
                             
                             // 隐藏密钥输入区域（因为已经有密钥了）
                             if (keyInputContainer) {
@@ -186,17 +186,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast('验证试用密钥时出错，请重试', 'error');
                     }
                 } else {
-                    console.error('API响应错误:', data);
+                    // 处理免费试用API返回的错误状态，比如密钥已存在但无效的情况
                     let errorMessage = data.error || '获取免费试用失败';
                     
-                    // 如果是500错误，提供更明确的错误信息
-                    if (response.status === 500) {
-                        errorMessage = `服务器错误 (${response.status}): ${errorMessage}。可能原因：\n1. 后端服务未启动\n2. 数据库连接配置错误\n3. 环境变量未设置\n\n请确保后端服务已启动并正确配置环境变量`;
-                    } else if (response.status === 404) {
-                        errorMessage = 'API端点未找到，请检查后端服务是否正确部署';
+                    // 检查是否是409错误（密钥已存在但无效）
+                    if (response.status === 409) {
+                        // 显示密钥状态信息，包含联系微信teachAIGC的说明
+                        showToast(errorMessage, 'error');
+                    } else {
+                        // 其他错误
+                        if (response.status === 500) {
+                            errorMessage = `服务器错误 (${response.status}): ${errorMessage}。可能原因：\n1. 后端服务未启动\n2. 数据库连接配置错误\n3. 环境变量未设置\n\n请确保后端服务已启动并正确配置环境变量`;
+                        } else if (response.status === 404) {
+                            errorMessage = 'API端点未找到，请检查后端服务是否正确部署';
+                        }
+                        showToast(errorMessage, 'error');
                     }
-                    
-                    showToast(errorMessage, 'error');
                 }
             } catch (error) {
                 console.error('获取免费试用过程中出现错误:', error);
@@ -396,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                          user.id || user.userId || user.StudentNo || user.userNumber || '';
                             
                             if (userName && userNo) {
-                                console.log('成功获取用户信息:', {name: userName, no: userNo});
+                                // console.log('todo 成功获取用户信息:', {name: userName, no: userNo});
                                 return userName + '|' + userNo;
                             } else {
                                 // 用户信息不完整但有部分信息

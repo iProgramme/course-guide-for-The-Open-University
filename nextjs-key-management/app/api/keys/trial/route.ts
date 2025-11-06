@@ -12,16 +12,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: '缺少 originalStr 参数' }, { status: 400 });
     }
 
-    // 检查用户是否已经有有效的密钥（相同 originalStr）
+    // 检查是否有使用相同 originalStr 的密钥存在（无论是否有效）
     // originalParams 可能是字符串或对象，需要进行适当的匹配检查
     const existingKeyRecords = await db
       .select()
       .from(apiKeys)
       .orderBy(desc(apiKeys.createdAt));
-      console.log('existingKeyRecords:',existingKeyRecords)
     
-    // 找到与 originalStr 匹配的有效密钥
-    let existingValidKey = null;
+    // 找到与 originalStr 匹配的密钥（不管是否有效）
+    let existingKey = null;
     for (const record of existingKeyRecords) {
       // 检查 originalParams 是否与 originalStr 匹配
       let isMatch = false;
@@ -43,39 +42,56 @@ export async function POST(request: Request) {
         }
       }
       
-      // 如果匹配且密钥有效，则使用该密钥
-      if (isMatch && isKeyValid({
-        expiresAt: record.expiresAt,
-        maxUses: record.maxUses!,
-        usedCount: record.usedCount!
-      })) {
-        existingValidKey = record;
+      // 如果匹配，不管密钥是否有效，都停止查找
+      if (isMatch) {
+        existingKey = record;
         break;
       }
     }
 
-    // 如果用户已经有有效的密钥，直接返回该密钥
-    if (existingValidKey) {
-      // 更新使用次数
-      const [updatedRecord] = await db
-        .update(apiKeys)
-        .set({ 
-          usedCount: (existingValidKey.usedCount ?? 0) + 1
-        })
-        .where(eq(apiKeys.id, existingValidKey.id))
-        .returning();
-
-      return NextResponse.json({ 
-        success: true, 
-        data: {
-          key: existingValidKey.key,
-          message: '使用现有密钥',
-          isNew: false
-        }
+    // 如果找到了使用相同 originalStr 的密钥，则根据其状态决定返回内容
+    if (existingKey) {
+      // 检查密钥是否仍然有效
+      const isStillValid = isKeyValid({
+        expiresAt: existingKey.expiresAt,
+        maxUses: existingKey.maxUses!,
+        usedCount: existingKey.usedCount!
       });
+      
+      if (isStillValid && existingKey.isActive) {
+        // 如果密钥仍然有效，返回密钥以供直接使用
+        return NextResponse.json({ 
+          success: true, 
+          data: {
+            key: existingKey.key,
+            message: '使用现有有效密钥',
+            isNew: false
+          }
+        });
+      } else {
+        // 如果密钥已失效，返回状态信息
+        let statusMessage = '该用户已存在试用密钥，';
+        
+        if (!existingKey.isActive) {
+          statusMessage += '当前状态：已禁用，请联系您的销售';
+        } else if (existingKey.expiresAt && new Date() > new Date(existingKey.expiresAt)) {
+          statusMessage += '当前状态：已过期，请联系您的销售';
+        } else if (existingKey.maxUses !== -1 && existingKey.usedCount >= existingKey.maxUses) {
+          statusMessage += '当前状态：已达使用次数上限，请联系您的销售';
+        } else {
+          statusMessage += '当前状态：无效，请联系您的销售';
+        }
+
+        // 返回错误状态，而不是创建新密钥
+        return NextResponse.json({ 
+          success: false, 
+          error: statusMessage,
+          data: existingKey
+        }, { status: 409 }); // 使用 409 Conflict 状态码
+      }
     }
 
-    // 如果没有有效密钥，则生成一个新的2小时有效密钥
+    // 如果没有找到现有密钥，则生成一个新的2小时有效密钥
     const newKey = generateApiKey();
     
     // 计算2小时后的时间（当前时间 + 2小时）

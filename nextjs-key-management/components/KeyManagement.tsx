@@ -101,6 +101,7 @@ const KeyManagement = () => {
         setSuccess(`密钥生成成功！密钥为: ${result.data.key}`);
         setTimeout(() => setSuccess(null), 10000); // 10秒后清除成功消息
       } else {
+        // 如果是密钥已存在的错误，显示更详细的状态信息
         setError(result.error);
       }
     } catch (err) {
@@ -155,10 +156,6 @@ const KeyManagement = () => {
   const [activeTab, setActiveTab] = useState<'list' | 'generate'>('list'); // 新增选项卡状态
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all'); // 新增筛选状态
   const [searchQuery, setSearchQuery] = useState(''); // 新增搜索状态
-
-  if (error) {
-    return <div className="text-red-500 p-4">错误: {error}</div>;
-  }
 
   // 筛选密钥
   const filteredKeys = keys.filter(key => {
@@ -216,12 +213,7 @@ const KeyManagement = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* 成功消息显示区域 */}
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-center">
-          {success}
-        </div>
-      )}
+      
       
       {/* 选项卡按钮 */}
       <div className="flex border-b border-gray-200 mb-6">
@@ -404,6 +396,21 @@ const KeyManagement = () => {
           <h2 className="text-xl font-semibold mb-6 text-gray-800 border-b pb-3">生成新密钥</h2>
           
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                生成参数
+              </label>
+              <input
+                type="text"
+                value={originalParams}
+                onChange={(e) => setOriginalParams(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                placeholder="例如: 231312+郭减"
+              />
+              <p className="mt-1 text-xs text-gray-500">用于生成密钥的参数（支持纯字符串或JSON格式）</p>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 密钥类型 *
@@ -421,6 +428,7 @@ const KeyManagement = () => {
                 <option value="custom">自定义类型</option>
               </select>
             </div>
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -461,19 +469,7 @@ const KeyManagement = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                生成参数 (可选)
-              </label>
-              <input
-                type="text"
-                value={originalParams}
-                onChange={(e) => setOriginalParams(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                placeholder="例如: 231312+郭减"
-              />
-              <p className="mt-1 text-xs text-gray-500">用于生成密钥的参数（支持纯字符串或JSON格式）</p>
-            </div>
+            
 
             <div className="md:col-span-2 flex justify-end">
               <button
@@ -484,6 +480,19 @@ const KeyManagement = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* 成功消息显示区域 */}
+      {success && (
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-center">
+          {success}
+        </div>
+      )}
+      {/* 失败消息显示区域 */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-center">
+          {error}
         </div>
       )}
     </div>

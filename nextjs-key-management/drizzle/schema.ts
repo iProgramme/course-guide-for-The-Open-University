@@ -8,7 +8,7 @@ export const apiKeys = pgTable('api_keys', {
   expiresAt: timestamp('expires_at'), // 可选：密钥有效期
   maxUses: integer('max_uses').default(-1), // -1 表示无限制
   usedCount: integer('used_count').default(0), // 已使用次数
-  originalParams: json('original_params'), // 用于生成密钥的参数
+  originalParams: json('original_params').notNull(), // 用于生成密钥的参数，现在为必填
   user: text('user'), // 使用人
   isActive: boolean('is_active').default(true),
 });
