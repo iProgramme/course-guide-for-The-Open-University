@@ -12,8 +12,8 @@ export const generateApiKey = (): string => {
 export const isKeyValid = (
   key: {
     expiresAt?: Date | null;
-    maxUses: number;
-    usedCount: number;
+    maxUses: number | null;
+    usedCount: number | null;
   }
 ): boolean => {
   // 检查是否已过期
@@ -22,7 +22,9 @@ export const isKeyValid = (
   }
 
   // 检查是否达到使用次数限制
-  if (key.maxUses !== -1 && key.usedCount >= key.maxUses) {
+  // maxUses为-1表示无限制，为null时也视为无限制
+  // usedCount为null时视为0次使用
+  if (key.maxUses !== null && key.maxUses !== -1 && (key.usedCount || 0) >= key.maxUses) {
     return false;
   }
 

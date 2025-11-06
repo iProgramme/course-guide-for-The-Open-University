@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         // 检查具体是哪个限制导致无效
         if (existingKey.expiresAt && new Date() > new Date(existingKey.expiresAt)) {
           statusMessage += '当前状态：已过期，请联系您的销售';
-        } else if (existingKey.maxUses !== -1 && existingKey.usedCount >= existingKey.maxUses) {
+        } else if (existingKey.maxUses !== null && existingKey.maxUses !== -1 && (existingKey.usedCount || 0) >= existingKey.maxUses) {
           statusMessage += '当前状态：已达使用次数上限，请联系您的销售';
         } else {
           statusMessage += '当前状态：无效，请联系您的销售';

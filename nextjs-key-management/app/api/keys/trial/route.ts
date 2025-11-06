@@ -54,8 +54,8 @@ export async function POST(request: Request) {
       // 检查密钥是否仍然有效
       const isStillValid = isKeyValid({
         expiresAt: existingKey.expiresAt,
-        maxUses: existingKey.maxUses!,
-        usedCount: existingKey.usedCount!
+        maxUses: existingKey.maxUses,
+        usedCount: existingKey.usedCount
       });
       
       if (isStillValid && existingKey.isActive) {
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
           statusMessage += '当前状态：已禁用，请联系您的销售';
         } else if (existingKey.expiresAt && new Date() > new Date(existingKey.expiresAt)) {
           statusMessage += '当前状态：已过期，请联系您的销售';
-        } else if (existingKey.maxUses !== -1 && existingKey.usedCount >= existingKey.maxUses) {
+        } else if (existingKey.maxUses !== null && existingKey.maxUses !== -1 && (existingKey.usedCount || 0) >= existingKey.maxUses) {
           statusMessage += '当前状态：已达使用次数上限，请联系您的销售';
         } else {
           statusMessage += '当前状态：无效，请联系您的销售';
