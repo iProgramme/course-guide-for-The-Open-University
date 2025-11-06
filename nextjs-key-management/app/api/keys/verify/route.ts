@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     // 检查密钥是否有效
     if (!record.isActive || !isKeyValid({
       expiresAt: record.expiresAt,
-      maxUses: record.maxUses!,
-      usedCount: record.usedCount!
+      maxUses: record.maxUses,
+      usedCount: record.usedCount
     })) {
       return NextResponse.json({ success: false, error: '密钥无效或已过期' }, { status: 403 });
     }

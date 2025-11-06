@@ -2,9 +2,9 @@
 var baseUrl = [
   'https://course-guide-for-the-open-universit.vercel.app',
   'http://localhost:3000'
-][1]
+][0];
 // 显示toast通知的函数
-function showToast(message, type = 'info') {
+function showToast(message, type) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.className = 'show ' + (type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : 'toast-info');
