@@ -184,4 +184,4 @@ async function startAutomation() {
 }
 
 // 启动脚本
-startAutomation();
+// startAutomation();
