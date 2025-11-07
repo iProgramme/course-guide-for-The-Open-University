@@ -4,14 +4,14 @@ var baseUrl = [
   'http://localhost:3000'
 ][0];
 // 显示toast通知的函数
-function showToast(message, type) {
+function showToast(message, type, time) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.className = 'show ' + (type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : 'toast-info');
     
     setTimeout(() => {
         toast.className = toast.className.replace('show', '');
-    }, 10000);
+    }, time || 10000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -97,94 +97,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 获取到试用密钥，可能是新生成的，也可能是现有的有效密钥
+                    // 获取到试用密钥，应该是有效的
                     const trialKey = data.data.key;
                     
-                    try {
-                        // 从当前页面获取globalData字段用于验证（之前为originalStr）
-                        let originalStrForValidation = await getOriginalStrFromPage();
-                        
-                        if (!originalStrForValidation) {
-                            showToast('无法获取当前页面的验证信息，无法验证密钥有效性', 'error');
-                            return;
+                    // 密钥有效，更新专业版授权状态
+                    isProVersionAuthorized = true;
+                    currentApiKey = trialKey; // 保存试用密钥
+                    
+                    // 更新专业版按钮的状态显示
+                    const proVersionBtn = document.getElementById('proVersionBtn');
+                    if (proVersionBtn) {
+                        // 修改按钮文本以反映已授权状态
+                        const spans = proVersionBtn.querySelectorAll('span');
+                        if (spans.length >= 2) {
+                            spans[1].textContent = '(已授权使用)';
+                            spans[1].style.color = '#4CAF50';
                         }
-                        
-                        // 验证获取到的试用密钥是否有效
-                        const validateResponse = await fetch(baseUrl + '/api/keys/validate', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                key: trialKey,
-                                originalStr: originalStrForValidation
-                            })
-                        });
-                        
-                        const validateData = await validateResponse.json();
-                        
-                        if (validateData.success) {
-                            // 密钥有效，更新专业版授权状态
-                            isProVersionAuthorized = true;
-                            currentApiKey = trialKey; // 保存试用密钥
-                            
-                            // 更新专业版按钮的状态显示
-                            const proVersionBtn = document.getElementById('proVersionBtn');
-                            if (proVersionBtn) {
-                                // 修改按钮文本以反映已授权状态
-                                const spans = proVersionBtn.querySelectorAll('span');
-                                if (spans.length >= 2) {
-                                    spans[1].textContent = '(已授权使用)';
-                                    spans[1].style.color = '#4CAF50';
-                                }
-                            }
-                            
-                            showToast(data.data.message || '免费试用已激活！', 'success');
-                            
-                            // 隐藏密钥输入区域（因为已经有密钥了）
-                            if (keyInputContainer) {
-                                keyInputContainer.style.display = 'none';
-                            }
-                            
-                            // 向内容脚本发送授权状态更新
-                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                                chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true, apiKey: trialKey}, function(response) {
-                                    console.log('试用授权状态已发送到内容脚本:', response);
-                                });
-                            });
-                            
-                            // 启动专业版功能
-                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                                chrome.tabs.sendMessage(tabs[0].id, {action: 'runProVersion'}, function(response) {
-                                    console.log(response.status);
-                                    showToast('专业版已启动', 'success');
-                                });
-                            });
-                        } else {
-                            // 密钥无效（已过期或被禁用）
-                            isProVersionAuthorized = false;
-                            currentApiKey = '';
-                            
-                            // 向内容脚本发送未授权状态
-                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                                chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: false, apiKey: null}, function(response) {
-                                    console.log('未授权状态已发送到内容脚本:', response);
-                                });
-                            });
-                            
-                            let invalidReason = validateData.error || '密钥无效';
-                            if (invalidReason.includes('过期')) {
-                                showToast('免费试用已过期，请联系微信购买新的密钥：teachAIGC', 'error');
-                            } else if (invalidReason.includes('禁用')) {
-                                showToast('密钥已被禁用，请联系微信购买新的密钥：teachAIGC', 'error');
-                            } else {
-                                showToast(`获取的试用密钥无效：${invalidReason}`, 'error');
-                            }
-                        }
-                    } catch (validationError) {
-                        console.error('验证试用密钥时出错:', validationError);
-                        showToast('验证试用密钥时出错，请重试', 'error');
                     }
+                    
+                    showToast(data.data.message || '免费试用已激活！', 'success');
+                    
+                    // 隐藏密钥输入区域（因为已经有密钥了）
+                    if (keyInputContainer) {
+                        keyInputContainer.style.display = 'none';
+                    }
+                    
+                    // Send authorization status to content script and then run ProVersion (same as manual validation)
+                    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                        if (tabs.length > 0) {
+                            const tabId = tabs[0].id;
+                            // First update the authorization status
+                            chrome.tabs.sendMessage(tabId, {action: 'updateProAuthStatus', authorized: true, apiKey: trialKey}, function(response) {
+                                console.log('授权状态已发送到内容脚本:', response);
+                                
+                                // After updating the status, run ProVersion automatically like in manual validation
+                                chrome.tabs.sendMessage(tabId, {action: 'runProVersion'}, function(runResponse) {
+                                    if (chrome.runtime.lastError) {
+                                        console.error('启动专业版失败:', chrome.runtime.lastError.message);
+                                        showToast('启动失败，请刷新页面后重试。', 'error');
+                                        return;
+                                    }
+                                    if (runResponse) {
+                                        console.log(runResponse.status);
+                                        showToast('专业版已启动', 'success');
+                                    } else {
+                                        console.error('启动专业版时 content script 没有响应。');
+                                        showToast('启动失败，请刷新页面后重试。', 'error');
+                                    }
+                                });
+                            });
+                        }
+                    });
                 } else {
                     // 处理免费试用API返回的错误状态，比如密钥已存在但无效的情况
                     let errorMessage = data.error || '获取免费试用失败';
@@ -219,9 +182,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, {action: 'runProVersion'}, function(response) {
-                    console.log(response.status);
-                    showToast(response.status || '专业版已启动', 'success');
+                // First ensure the content script has the latest auth status
+                chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true, apiKey: currentApiKey}, function(authResponse) {
+                    console.log('授权状态已重新发送到内容脚本:', authResponse);
+                    
+                    // Then run the ProVersion
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'runProVersion'}, function(response) {
+                        if (chrome.runtime.lastError) {
+                            console.error('启动专业版失败:', chrome.runtime.lastError.message);
+                            showToast('启动失败，请刷新页面后重试。', 'error');
+                            return;
+                        }
+                        if (response) {
+                            console.log(response.status);
+                            showToast(response.status || '专业版已启动', 'success');
+                        } else {
+                            console.error('启动专业版时 content script 没有响应。');
+                            showToast('启动失败，请刷新页面后重试。', 'error');
+                        }
+                    });
                 });
             });
         });
@@ -278,18 +257,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 验证成功，设置授权标志
                     isProVersionAuthorized = true;
                     currentApiKey = key; // 保存当前密钥
-                    showToast('密钥验证成功！专业版已解锁', 'success');
+                    showToast('密钥验证成功！专业版已解锁', 'success', 3000);
                     
                     // 隐藏密钥输入区域
                     if (keyInputContainer) {
                         keyInputContainer.style.display = 'none';
                     }
                     
-                    // 向内容脚本发送授权状态更新
+                    // Send authorization status to content script and then run ProVersion
                     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                        chrome.tabs.sendMessage(tabs[0].id, {action: 'updateProAuthStatus', authorized: true, apiKey: key}, function(response) {
-                            console.log('授权状态已发送到内容脚本:', response);
-                        });
+                        if (tabs.length > 0) {
+                            const tabId = tabs[0].id;
+                            // First update the authorization status
+                            chrome.tabs.sendMessage(tabId, {action: 'updateProAuthStatus', authorized: true, apiKey: key}, function(response) {
+                                console.log('授权状态已发送到内容脚本:', response);
+                                
+                                // After updating the status, run ProVersion automatically like in free trial
+                                chrome.tabs.sendMessage(tabId, {action: 'runProVersion'}, function(runResponse) {
+                                    if (chrome.runtime.lastError) {
+                                        console.error('启动专业版失败:', chrome.runtime.lastError.message);
+                                        showToast('启动失败，请刷新页面后重试。', 'error');
+                                        return;
+                                    }
+                                    if (runResponse) {
+                                        console.log(runResponse.status);
+                                        showToast('专业版已启动', 'success');
+                                    } else {
+                                        console.error('启动专业版时 content script 没有响应。');
+                                        showToast('启动失败，请刷新页面后重试。', 'error');
+                                    }
+                                });
+                            });
+                        }
                     });
                 } else {
                     // 验证失败，重置授权状态

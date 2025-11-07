@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       maxUses: record.maxUses,
       usedCount: record.usedCount
     })) {
-      return NextResponse.json({ success: false, error: '密钥无效或已过期' }, { status: 403 });
+      return NextResponse.json({ success: false, error: '密钥无效或已过期，请联系您的销售' }, { status: 403 });
     }
 
     // 验证originalParams和originalStr是否匹配

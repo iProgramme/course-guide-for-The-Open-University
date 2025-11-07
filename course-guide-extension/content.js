@@ -542,9 +542,14 @@ const ExtensionController = {
       } 
       // 添加授权状态更新消息处理
       else if (request.action === 'updateProAuthStatus') {
-        this.isProVersionAuthorized = request.authorized || false;
-        this.currentApiKey = request.apiKey || null;
-        sendResponse({status: `授权状态已更新: ${this.isProVersionAuthorized}`, authorized: this.isProVersionAuthorized});
+            this.isProVersionAuthorized = request.authorized || false;
+            this.currentApiKey = request.apiKey || null;
+            console.log(`内容脚本: 授权状态更新为 ${this.isProVersionAuthorized}`); // 添加此日志
+            sendResponse({status: `授权状态已更新: ${this.isProVersionAuthorized}`, authorized: this.isProVersionAuthorized});      }
+      // 添加ping-pong握手，确保content_script准备就绪
+      else if (request.action === 'ping') {
+        sendResponse({status: 'ready'});
+        return true; // 保持消息通道开放
       }
       // 添加实时密钥验证功能
       else if (request.action === 'validateApiKey') {
@@ -653,37 +658,18 @@ const ExtensionController = {
   }
 };
 
-// 初始化扩展控制器 - 确保在页面完全加载后
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
+// 单一、可靠的初始化
+function initializeController() {
+  // 防止重复初始化
+  if (!window.extensionControllerInitialized) {
     ExtensionController.init();
-  });
-} else {
-  // 如果页面已经加载完成，直接初始化
-  ExtensionController.init();
+    window.extensionControllerInitialized = true;
+  }
 }
 
-// 作为额外的保障，也等待页面完全加载
-window.addEventListener('load', function() {
-  // 确保控制器已初始化，以防DOMContentLoaded事件已错过
-  if (typeof ExtensionController !== 'undefined' && typeof ExtensionController.init === 'function') {
-    // 为防止重复初始化，我们可以添加一个检查
-    if (!window.extensionControllerInitialized) {
-      ExtensionController.init();
-      window.extensionControllerInitialized = true;
-    }
-  }
-});
-
-// DOM加载时初始化扩展
-document.addEventListener('DOMContentLoaded', function() {
-  ExtensionController.init();
-});
-
-// 如果DOM已加载也立即初始化
+// 无论DOM状态如何，都尝试初始化
 if (document.readyState === 'loading') {
-  // 仍在加载，等待事件
+  document.addEventListener('DOMContentLoaded', initializeController);
 } else {
-  // 已加载，立即初始化
-  ExtensionController.init();
+  initializeController();
 }
