@@ -66,22 +66,39 @@
             font-size: 16px;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .feature-btn:hover::before {
+            left: 100%;
         }
         
         .feature-btn:hover {
             background-color: #45a049;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         
         .pro-btn {
-            background-color: #2196F3;
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
         }
         
         .pro-btn:hover {
-            background-color: #1976D2;
+            background: linear-gradient(45deg, #8e44ad, #7d3c98);
         }
         
         .status {
@@ -192,17 +209,20 @@
         .verify-btn {
             width: 100%;
             padding: 10px;
-            background-color: #FF9800;
+            background: linear-gradient(45deg, #FF9800, #F57C00);
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(255, 152, 0, 0.3);
         }
         
         .verify-btn:hover {
-            background-color: #F57C00;
+            background: linear-gradient(45deg, #F57C00, #E65100);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(255, 152, 0, 0.4);
         }
         
         /* Toast notification styles */
@@ -251,39 +271,82 @@
     
     <!-- 功能标签页 -->
     <div id="features" class="tab-content active">
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button id="basic2LevelBtn" class="feature-btn">
-                <span style="font-size: 18px; font-weight: bold; display: block;">📚 基础版 (2级目录)</span>
-                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">适用于2级结构课程目录</span>
-            </button>
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="color: #2c3e50; margin: 0;">🎓 国开课程智能助手</h2>
+            <p style="color: #7f8c8d; margin: 5px 0 0;">智能完成课程任务，节省宝贵时间</p>
+        </div>
+        
+        <!-- 基础版功能卡 -->
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #dee2e6;">
+            <h3 style="text-align: center; color: #2c3e50; margin-top: 0; margin-bottom: 12px;">🟢 基础版 - 免费使用</h3>
+            <div style="text-align: left; margin-bottom: 10px;">
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> 自动处理2级和3级课程目录</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> 智能完成视频、文档和页面内容</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> 后台静默运行，不影响其他操作</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>需手动切换章节</strong> - 完成当前章节后需手动操作</p>
+                                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>常规播放速度</strong> - 无法加速视频学习</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>常规课程速度</strong> - 无法提升整体学习效率</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>可能需重试</strong> - 部分情况下需要重新运行</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>耗时较长</strong> - 手动完成需5-30天时间</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #e74c3c;">⚠️</span> <strong>无做题攻略</strong> - 缺少高效答题策略指导</p>
+            </div>
             
-            <button id="basic3LevelBtn" class="feature-btn">
-                <span style="font-size: 18px; font-weight: bold; display: block;">📖 基础版 (3级目录)</span>
-                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">适用于3级结构课程目录</span>
-            </button>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button id="basic2LevelBtn" class="feature-btn" style="background-color: #3498db; font-size: 15px; padding: 10px;">
+                    <span style="font-size: 16px; font-weight: bold; display: block;">📚 2级目录课程</span>
+                    <span style="font-size: 11px; opacity: 0.9; display: block; margin-top: 2px;">适用于简单结构课程</span>
+                </button>
+                
+                <button id="basic3LevelBtn" class="feature-btn" style="background-color: #3498db; font-size: 15px; padding: 10px;">
+                    <span style="font-size: 16px; font-weight: bold; display: block;">📖 3级目录课程</span>
+                    <span style="font-size: 11px; opacity: 0.9; display: block; margin-top: 2px;">适用于复杂结构课程</span>
+                </button>
+            </div>
         </div>
         
         <!-- 免费试用区域 -->
-        <div style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #f0f8ff, #e6f3ff); border-radius: 10px; border-left: 4px solid #4CAF50;">
-            <h3 style="margin-top: 0; text-align: center; color: #333;">🎁 免费试用</h3>
-            <button id="freeTrialBtn" class="feature-btn" style="margin: 10px auto; display: block; background-color: #4CAF50;">
-                <span style="font-size: 18px; font-weight: bold; display: block;">⏰ 免费体验1门课或2小时</span>
-                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">(无需密钥，立即使用)</span>
+        <div style="margin: 15px 0; padding: 12px; background: linear-gradient(135deg, #d4fc79, #96e6a1); border-radius: 12px; border-left: 4px solid #2ecc71; text-align: center;">
+            <h3 style="margin-top: 0; margin-bottom: 8px; color: #27ae60;">🎁 限时免费体验</h3>
+            <p style="font-size: 13px; margin: 8px 0; color: #2c3e50;">无需密钥，立即体验专业版功能</p>
+            <button id="freeTrialBtn" class="feature-btn" style="margin: 8px auto; display: block; background: linear-gradient(45deg, #2ecc71, #27ae60); font-size: 15px; padding: 10px;">
+                <span style="font-size: 16px; font-weight: bold; display: block;">⏰ 2小时课程体验</span>
+                <span style="font-size: 11px; opacity: 0.9; display: block; margin-top: 2px;">(完全解锁专业版功能)</span>
             </button>
         </div>
         
-        <div style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-radius: 10px; border-left: 4px solid #2196F3;">
-            <h3 style="margin-top: 0; text-align: center; color: #333;">💎 专业版功能</h3>
-            <div class="pro-description" style="padding: 10px 0; text-align: center;">
-                <p>自动完成所有章节，无需手动切换</p>
+        <!-- 专业版功能卡 -->
+        <div style="background: linear-gradient(135deg, #a8edea, #fed6e3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #b3d9d9; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; right: 0; background: #e74c3c; color: white; padding: 3px 10px; font-size: 12px; border-bottom-left-radius: 8px;">🔥 热销推荐</div>
+            <h3 style="text-align: center; color: #2c3e50; margin-top: 10px; margin-bottom: 12px;">💎 专业版 - 智能升级</h3>
+            <div style="text-align: left; margin-bottom: 10px;">
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>智能导航</strong> - 自动切换章节，无需手动操作</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>4倍速播放</strong> - 视频自动加速，效率提升300%</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>300%课程速度</strong> - 整体上课效率提升300%</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>全课程覆盖</strong> - 处理所有类型课程内容</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>一键完成</strong> - 点击启动，自动完成整门课程</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>稳定可靠</strong> - 几乎无需重新运行</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>时间优势</strong> - 2-5天完成全部课程</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>附赠高效做题攻略</strong> - 准确率超90%，做题时间减少超90%</p>
             </div>
-            <button id="proVersionBtn" class="feature-btn pro-btn" style="margin: 10px auto; display: block;">
-                <span style="font-size: 18px; font-weight: bold; display: block;">🔐 专业版</span>
-                <span style="font-size: 12px; opacity: 0.9; display: block; margin-top: 4px;">(需验证密钥)</span>
+            <div style="background: #e8f6f3; border: 2px solid #58d68d; border-radius: 10px; padding: 10px; margin: 10px 0; text-align: center;">
+                <p style="margin: 5px 0; font-size: 13px; color: #27ae60; font-weight: bold;">
+                    ⏱️ <strong>时间优势：</strong> 专业版2-5天完成，自刷需5-30天！
+                </p>
+                <p style="margin: 5px 0; font-size: 13px; color: #27ae60; font-weight: bold;">
+                    🎯 <strong>附赠攻略：</strong> 准确率超90%，做题时间减少超90%
+                </p>
+            </div>
+            <button id="proVersionBtn" class="feature-btn pro-btn" style="margin: 10px auto; display: block; background: linear-gradient(45deg, #9b59b6, #8e44ad); font-size: 15px; padding: 10px;">
+                <span style="font-size: 16px; font-weight: bold; display: block;">🚀 专业版启动</span>
+                <span style="font-size: 11px; opacity: 0.9; display: block; margin-top: 2px;">(需验证密钥)</span>
             </button>
             <div id="keyInputContainer" class="key-input-container">
-                <input type="password" id="apiKeyInput" placeholder="🔑 请输入专业版密钥" class="key-input">
-                <button id="verifyKeyBtn" class="verify-btn">✅ 验证密钥</button>
+                <input type="password" id="apiKeyInput" placeholder="🔑 请输入专业版激活码" class="key-input">
+                <button id="verifyKeyBtn" class="verify-btn">✅ 激活验证</button>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <span style="font-size: 12px; color: #7f8c8d;">还没有激活码？</span>
+                <button id="switchToUpgradeTab" class="feature-btn" style="background-color: #f39c12; font-size: 12px; padding: 6px 12px; margin: 5px 0; display: inline-block; width: auto;">点击获取</button>
             </div>
         </div>
         
@@ -293,90 +356,197 @@
     <!-- 使用指南标签页 -->
     <div id="guide" class="tab-content">
         <div class="guide-content">
-            <div style="background: linear-gradient(135deg, #ffecd2, #fcb69f); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px;">
-                <h3>📺 观看教程视频</h3>
-                <p>还不知道怎么用？花5分钟观看教程视频快速上手！</p>
-                <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; padding: 12px 20px; background-color: #00A1D6; color: white; text-decoration: none; border-radius: 8px; margin: 10px 0; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    👉 点击观看使用教程视频
+            <!-- <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 20px;">📺 快速上手教程</h3>
+                <p style="margin: 0 0 15px 0; opacity: 0.9;">5分钟视频教程，快速掌握使用方法</p>
+                <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; padding: 14px 24px; background-color: #FF6B6B; color: white; text-decoration: none; border-radius: 8px; margin: 10px 0; font-weight: bold; box-shadow: 0 4px 15px rgba(255,107,107,0.4); transition: all 0.3s;">
+                    <span style="display: block; font-size: 16px;">▶️ 立即观看教程视频</span>
+                    <span style="display: block; font-size: 12px; margin-top: 4px; opacity: 0.9;">免费教学，快速上手</span>
                 </a>
+            </div> -->
+            
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 18px; margin-bottom: 20px; border-left: 4px solid #4CAF50;">
+                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center;">
+                    <span style="display: inline-block; width: 28px; height: 28px; background: #4CAF50; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; margin-right: 10px;">1</span>
+                    开始使用前准备
+                </h3>
+                <p style="margin: 8px 0; font-size: 14px; color: #34495e;">请先登录到国家开放大学并打开课程页面</p>
+                <div style="text-align: center; margin: 15px 0;">
+                    <img src="../1.png" alt="课程页面示例" style="max-width: 100%; border-radius: 8px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">课程页面示例</p>
+                </div>
             </div>
             
-            <h3>使用说明</h3>
-            <p>1. 请先登录到国家开放大学并打开课程页面</p>
-            <img src="../1.png" alt="课程页面示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 18px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center;">
+                    <span style="display: inline-block; width: 28px; height: 28px; background: #2196F3; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; margin-right: 10px;">2</span>
+                    识别课程目录类型
+                </h3>
+                <p style="margin: 8px 0 15px 0; font-size: 14px; color: #34495e;">课程目录分为2级和3级两种结构（专业版无需判断类型）</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 8px 0; font-weight: bold; color: #2196F3;">2级目录</p>
+                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #666;">章节直接显示在侧边栏</p>
+                        <img src="../2.png" alt="2级目录示例" style="max-width: 100%; border-radius: 6px; border: 1px solid #eee;">
+                    </div>
+                    
+                    <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <p style="margin: 0 0 8px 0; font-weight: bold; color: #2196F3;">3级目录</p>
+                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #666;">章节下还有子章节结构</p>
+                        <img src="../3.png" alt="3级目录示例" style="max-width: 100%; border-radius: 6px; border: 1px solid #eee;">
+                    </div>
+                </div>
+            </div>
             
-            <h3>如何判断目录类型（pro用户无需判断，直接点击到某一节课程后开始就行）</h3>
-            <p>课程目录分为2级和3级两种结构：</p>
-            <p>• 2级目录：章节直接显示在侧边栏</p>
-            <img src="../2.png" alt="2级目录示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
-            <p>• 3级目录：章节下还有子章节结构</p>
-            <img src="../3.png" alt="3级目录示例" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 18px; margin-bottom: 20px; border-left: 4px solid #FF9800;">
+                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center;">
+                    <span style="display: inline-block; width: 28px; height: 28px; background: #FF9800; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; margin-right: 10px;">3</span>
+                    使用步骤
+                </h3>
+                <ol style="padding-left: 20px; margin: 10px 0;">
+                    <li style="margin: 8px 0; font-size: 14px; color: #34495e;"><strong>基础版</strong>：根据课程目录类型点击对应按钮，脚本会自动完成当前章节所有内容。完成后需手动切换到下一章</li>
+                    <li style="margin: 8px 0; font-size: 14px; color: #34495e;"><strong>专业版</strong>：自动切换章节，无需手动操作</li>
+                </ol>
+            </div>
             
-            <h3>使用步骤</h3>
-            <p>1. 根据课程目录类型点击对应按钮</p>
-            <p>2. 脚本会自动完成当前章节所有内容</p>
-            <p>3. 完成后需手动切换到下一章（专业版自动切换）</p>
-            
-            <h3>注意事项</h3>
-            <p>• 脚本仅限电脑使用，手机不可使用</p>
-            <p>• 脚本运行时请勿关闭页面或锁屏</p>
-            <p>• 可以同时打开其他应用（如微信、QQ等）</p>
-            <p>• 【脚本不会自动做练习题】，练习题的完成，可以根据视频教学来完成 <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; padding: 12px 20px; background-color: #00A1D6; color: white; text-decoration: none; border-radius: 8px; margin: 10px 0; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    👉 点击观看使用教程视频
-                </a></p>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 12px; display: flex; align-items: center;">
+                    <span style="display: inline-block; width: 28px; height: 28px; background: #f39c12; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; margin-right: 10px;">!</span>
+                    重要注意事项
+                </h3>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li style="margin: 6px 0; font-size: 14px; color: #34495e;">脚本仅限电脑使用，手机无法使用</li>
+                    <li style="margin: 6px 0; font-size: 14px; color: #34495e;">脚本运行时请勿关闭页面或锁屏</li>
+                    <li style="margin: 6px 0; font-size: 14px; color: #34495e;">可以同时打开其他应用（如微信、QQ等）</li>
+                    <li style="margin: 6px 0; font-size: 14px; color: #34495e;">脚本不会自动做练习题，需要您手动完成</li>
+                </ul>
+                
+                <!-- <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 15px; border-left: 3px solid #3498db;">
+                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #2980b9;">💡 提示：练习题如何完成</p>
+                    <p style="margin: 0; font-size: 13px; color: #34495e;">练习题的完成，可以根据视频教学来完成。观看教程视频获取详细指导：</p>
+                    <a href="https://www.bilibili.com/video/BV1aK4wz3EGM/?vd_source=040ae50bcee1b8e8f33e26316e5fcec8" target="_blank" style="display: inline-block; margin-top: 8px; padding: 8px 16px; background-color: #3498db; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: bold; transition: background-color 0.3s;">
+                        观看练习题教程
+                    </a>
+                </div> -->
+            </div>
         </div>
     </div>
     
     <!-- 升级专业版标签页 -->
     <div id="upgrade" class="tab-content">
         <div class="upgrade-content">
-            <h3>🎓 升级专业版，享受更智能的课程完成体验</h3>
-            <p style="text-align: left;">
-                【更智能】：自动完成所有章节，无需手动切换章节，不再像是基础版那样，每次还要自己手动切换章节<br>
-                【更快速】：视频课程自动开启4倍速播放（我试过，再高就无效了），让你的上课效率更高<br>
-                【更稳定】：目前测试更多的课程都支持，已经发给我的很多同学（有本地的，也有其他省市的）免费测试过，都说好用<br>
-                【更便宜】：59元/月，永久版149元。刷课机构的报价是50元/门，一学期6门课就是300块钱，5学期至少1500元。而在这，您只需要花3门课的价格就可以解决掉80%的课程<br>
-                【暂时不支持做题】，做题的功能比上课要复杂很多，我们已经在研发中<br>
-                【其他疑问】：如果您有其他疑问，欢迎联系我们微信：teachAIGC。邮箱 2641927926@qq.com ，我们会尽快回复您
-            </p>
+            <div style="text-align: center; padding: 10px 0 15px;">
+                <h3 style="color: #2c3e50; margin-top: 0;">🚀 专业版 - 解放你的学习时间</h3>
+                <p style="color: #7f8c8d; font-size: 14px;">让智能技术帮你完成课程任务，专注更重要的事情</p>
+            </div>
             
-
+            <div style="background: linear-gradient(135deg, #f0f8ff, #e6f3ff); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h3 style="text-align: center; color: #2980b9; margin-top: 0;">✨ 专业版核心优势</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 10px;">
+                    <div style="flex: 1; min-width: 150px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="font-size: 24px; color: #3498db; margin-bottom: 5px;">⚡</div>
+                        <h4 style="color: #2c3e50; margin: 5px 0;">智能加速</h4>
+                        <p style="font-size: 12px; color: #7f8c8d; margin: 0;">视频4倍速+课程300%提速</p>
+                    </div>
+                    <div style="flex: 1; min-width: 150px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="font-size: 24px; color: #3498db; margin-bottom: 5px;">🤖</div>
+                        <h4 style="color: #2c3e50; margin: 5px 0;">全自动化</h4>
+                        <p style="font-size: 12px; color: #7f8c8d; margin: 0;">自动切换章节，无需手动干预</p>
+                    </div>
+                    <div style="flex: 1; min-width: 150px; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="font-size: 24px; color: #3498db; margin-bottom: 5px;">🎯</div>
+                        <h4 style="color: #2c3e50; margin: 5px 0;">附赠做题攻略</h4>
+                        <p style="font-size: 12px; color: #7f8c8d; margin: 0;">准确率超90%，做题时间减少超90%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center;">
+                <h3 style="color: #d35400; margin-top: 0;">💰 成本对比 - 专业版更划算</h3>
+                <p style="margin: 10px 0; font-size: 14px; color: #2c3e50;">
+                    <strong>代刷机构费用：</strong>50元/门课<br>
+                    <strong>一学期费用：</strong>5-10门课 × 50元 = <strong>250-500元</strong><br>
+                    <strong>三年总费用：</strong>6学期 × 250-500元 = <strong>1500-3000元</strong><br><br>
+                    <strong>我们的价格：</strong>永久版只需 <strong>149元</strong>，一次购买，终身使用！
+                </p>
+                <div style="font-size: 18px; color: #27ae60; font-weight: bold;">为您节省高达2851元！</div>
+            </div>
+            
+            <div style="background: #d5f5e3; border: 2px solid #58d68d; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center;">
+                <h3 style="color: #27ae60; margin-top: 0;">⏱️ 时间对比 - 自己刷 vs 专业版</h3>
+                <p style="margin: 10px 0; font-size: 14px; color: #2c3e50;">
+                    <strong>自己手动完成：</strong>每门课需要 <strong>1-3天</strong><br>
+                    <strong>一学期5-10门课：</strong>需要 <strong>5-30天</strong> 的大量时间<br><br>
+                    <strong>使用专业版：</strong>仅需 <strong>2-5天</strong> 即可完成所有课程<br>
+                    <span style="font-size: 16px; color: #e74c3c; font-weight: bold;">节省高达80%的上课时间！</span>
+                </p>
+            </div>
+            
+            <div style="background: #fed6e3; border: 2px solid #e74c3c; border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center;">
+                <h3 style="color: #c0392b; margin-top: 0;">🎯 额外福利 - 做题攻略指南</h3>
+                <p style="margin: 10px 0; font-size: 14px; color: #2c3e50;">
+                    <strong>专业版用户专享：</strong> 附赠高效做题攻略指南<br>
+                    <strong>准确率：</strong> 超过 <strong>90%</strong><br>
+                    <strong>时间节省：</strong> 做题时间减少<strong>超90%</strong><br>
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin: 15px 0;">
+                <div style="display: inline-block; background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold;">
+                    💰 超值价格：比刷课机构便宜80%
+                </div>
+            </div>
             
             <div class="payment-section">
-                <div style="text-align: left; padding: 0 10px;">
-                    <div style="background-color: #e8f5e9; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #4CAF50;">
-                        <p>
-                            <span class="price-tag">体验版 59元/月</span><br>
-                            如果不确定效果好不好，可以买一个月的体验一下，一个月的时间，完全可以上完这学期所有课了
-                        </p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="background: linear-gradient(135deg, #e8f6f3, #d1f2eb); padding: 15px; border-radius: 10px; border: 2px solid #2ecc71;">
+                        <h3 style="color: #27ae60; margin-top: 0; text-align: center;">🎯 体验版 ￥59/月</h3>
+                        <ul style="text-align: left; padding-left: 20px; color: #2c3e50;">
+                            <li>完整专业版功能</li>
+                            <li>支持多门课程使用</li>
+                            <li>适合单学期短期使用</li>
+                        </ul>
+                        <p style="text-align: center; font-weight: bold; color: #27ae60; margin: 10px 0;">平均每天仅需约￥2</p>
                     </div>
-                    <div style="background-color: #e3f2fd; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 4px solid #2196F3;">
-                        <p>
-                            <span class="price-tag">永久版 149元</span><br>
-                            如果您剩余的课程大于3学期，推荐买此项
-                        </p>
+                    
+                    <div style="background: linear-gradient(135deg, #fdebd0, #fad7ac); padding: 15px; border-radius: 10px; border: 2px solid #f39c12; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 0; right: 0; background: #e67e22; color: white; padding: 5px 10px; font-size: 12px; border-bottom-left-radius: 8px;">最佳价值</div>
+                        <h3 style="color: #d35400; margin-top: 10px; text-align: center;">💎 永久版 ￥149 <span style="font-size: 12px; color: #7f8c8d; font-weight: normal;">(一次购买，永久使用)</span></h3>
+                        <ul style="text-align: left; padding-left: 20px; color: #2c3e50;">
+                            <li>终身使用所有功能</li>
+                            <li>剩余3学期及以上推荐</li>
+                            <li>平均每门课仅需￥20左右</li>
+                        </ul>
+                        <p style="text-align: center; font-weight: bold; color: #d35400; margin: 10px 0;">节省超过￥1000学习成本</p>
                     </div>
                 </div>
             </div>
             
-            <div style="display: flex; justify-content: space-around; margin: 15px 0; flex-wrap: wrap; gap: 10px;">
-                <div class="payment-method" style="text-align: center; flex: 1; min-width: 150px; margin: 0 5px; background-color: #f9f9f9; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h3>💳 支付宝支付</h3>
-                    <img src="payment/alipay.jpg" alt="支付宝收款码" class="payment-image">
-                </div>
-                
-                <div class="payment-method" style="text-align: center; flex: 1; min-width: 150px; margin: 0 5px; background-color: #f9f9f9; padding: 10px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h3>💰 微信支付</h3>
-                    <img src="payment/wechat.jpg" alt="微信收款码" class="payment-image">
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 15px 0; text-align: center;">
+                <h4 style="color: #f39c12; margin: 0 0 8px 0;">💳 便捷支付方式</h4>
+                <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                    <div class="payment-method" style="text-align: center; flex: 1; min-width: 140px; background-color: #f8f9fa; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h3 style="color: #0066cc; margin: 5px 0;">💳 支付宝</h3>
+                        <img src="payment/alipay.jpg" alt="支付宝收款码" class="payment-image">
+                    </div>
+                    
+                    <div class="payment-method" style="text-align: center; flex: 1; min-width: 140px; background-color: #f8f9fa; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h3 style="color: #06b48a; margin: 5px 0;">💰 微信支付</h3>
+                        <img src="payment/wechat.jpg" alt="微信收款码" class="payment-image">
+                    </div>
                 </div>
             </div>
             
-            <div class="wechat-section">
-                <h3>🔑 获取密钥</h3>
-                <p>扫码转账后，将截图发送给微信：<strong>teachAIGC</strong></p>
-                <p>收到截图后，我们会验证并发送专业版密钥给您</p>
-                <p style="font-size: 12px; color: #888; margin: 10px 0 5px;">⚠️ 仅限个人使用，禁止分享或转售</p>
-                <p style="font-size: 12px; color: #888;">✨ 做题版功能即将上线，敬请期待</p>
+            <div class="wechat-section" style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                <h3 style="color: #2c3e50; margin-top: 0;">🔑 激活流程</h3>
+                <ol style="text-align: left; padding-left: 20px; color: #2c3e50;">
+                    <li>选择合适版本并完成支付</li>
+                    <li>将支付截图发送至微信：<strong style="color: #3498db;">teachAIGC</strong></li>
+                    <li>收到激活码后返回插件页面激活</li>
+                </ol>
+                <p style="font-size: 12px; color: #888; margin: 10px 0 5px; text-align: center;">⚠️ 仅限个人使用，禁止分享或转售</p>
+                <p style="font-size: 13px; color: #2c3e50; text-align: center; margin: 15px 0 0;">📞 如有疑问，联系微信：<strong style="color: #3498db;">teachAIGC</strong></p>
             </div>
         </div>
     </div>

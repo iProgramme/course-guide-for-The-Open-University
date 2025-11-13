@@ -122,10 +122,60 @@ const KeyManagement = () => {
     return `${key.usedCount}/${key.maxUses}`;
   };
 
+  // 状态用于跟踪是否正在编辑某个密钥
+  const [editingKeyId, setEditingKeyId] = useState<number | null>(null);
+  const [editingKeyType, setEditingKeyType] = useState('');
+  const [editingExpiresAt, setEditingExpiresAt] = useState('');
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setSuccess('密钥已复制到剪贴板！');
     setTimeout(() => setSuccess(null), 3000);
+  };
+
+  // 修改密钥信息的函数
+  const updateKeyInfo = async (id: number) => {
+    try {
+      const response = await fetch('/api/keys/update', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          keyType: editingKeyType,
+          expiresAt: editingExpiresAt || null,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSuccess('密钥信息更新成功！');
+        setEditingKeyId(null);
+        fetchKeys(); // 刷新列表
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('更新密钥信息失败');
+      console.error('Update key info error:', err);
+    }
+  };
+
+  // 开始编辑密钥
+  const startEditing = (key: ApiKey) => {
+    setEditingKeyId(key.id);
+    setEditingKeyType(key.keyType);
+    setEditingExpiresAt(key.expiresAt || '');
+  };
+
+  // 取消编辑
+  const cancelEditing = () => {
+    setEditingKeyId(null);
+    setEditingKeyType('');
+    setEditingExpiresAt('');
   };
 
   const updateKeyStatus = async (id: number, isActive: boolean) => {
@@ -307,11 +357,11 @@ const KeyManagement = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
                   <tr>
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-24">状态</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-32">密钥</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-28">类型</th>
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-36">生成时间</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 bg-amber-50 w-40">生成参数</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-28">类型</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-24">状态</th>
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-36">生成时间</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-36">有效期</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 w-20">使用次数</th>
                     <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">操作</th>
@@ -323,21 +373,12 @@ const KeyManagement = () => {
                     
                     return (
                       <tr key={key.id} className="hover:bg-blue-50 transition-colors duration-150">
-                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
-                          <div className="text-gray-900">
-                            <span className={`px-2 py-1 text-xs rounded-full ${statusColor} inline-block min-w-[60px] text-center`}>
-                              {status}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
-                          <div className="text-gray-900 font-mono text-xs break-all max-w-[80px]">{key.key.substring(0, 15)}...</div>
-                        </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
-                          <div className="text-gray-900 text-sm">{key.keyType}</div>
-                        </td>
-                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
-                          <div className="text-gray-900 text-sm">{formatDate(key.createdAt)}</div>
+                        <td 
+                          className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200 cursor-pointer"
+                          onClick={() => copyToClipboard(key.key)}
+                          title="点击复制密钥"
+                        >
+                          <div className="text-gray-900 font-mono text-xs break-all max-w-[120px] hover:text-blue-600">{key.key.substring(0, 15)}...</div>
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200 bg-amber-50">
                           <div className="text-gray-900 text-xs break-all max-w-[100px]">
@@ -347,36 +388,83 @@ const KeyManagement = () => {
                           </div>
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
-                          <div className="text-gray-900 text-sm">{formatDate(key.expiresAt)}</div>
+                          {editingKeyId === key.id ? (
+                            <input
+                              type="text"
+                              value={editingKeyType}
+                              onChange={(e) => setEditingKeyType(e.target.value)}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="密钥类型"
+                            />
+                          ) : (
+                            <div className="text-gray-900 text-sm">{key.keyType}</div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900">
+                            <span className={`px-2 py-1 text-xs rounded-full ${statusColor} inline-block min-w-[60px] text-center`}>
+                              {status}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          <div className="text-gray-900 text-sm">{formatDate(key.createdAt)}</div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
+                          {editingKeyId === key.id ? (
+                            <input
+                              type="datetime-local"
+                              value={editingExpiresAt ? editingExpiresAt.slice(0, 16) : ''}
+                              onChange={(e) => setEditingExpiresAt(e.target.value)}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          ) : (
+                            <div className="text-gray-900 text-sm">{formatDate(key.expiresAt)}</div>
+                          )}
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap border-r border-gray-200">
                           <div className="text-gray-900 text-sm">{getUsageStatus(key)}</div>
                         </td>
                         <td className="px-3 py-2.5 whitespace-nowrap">
                           <div className="flex space-x-1">
-                            <button
-                              onClick={() => copyToClipboard(key.key)}
-                              className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors duration-200"
-                              title="复制密钥"
-                            >
-                              复制
-                            </button>
-                            {key.isActive ? (
-                              <button
-                                onClick={() => updateKeyStatus(key.id, false)}
-                                className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors duration-200"
-                                title="禁用密钥"
-                              >
-                                禁用
-                              </button>
+                            {editingKeyId === key.id ? (
+                              <>
+                                <button
+                                  onClick={() => updateKeyInfo(key.id)}
+                                  className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                  title="保存修改"
+                                >
+                                  保存
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                  title="取消"
+                                >
+                                  取消
+                                </button>
+                              </>
                             ) : (
-                              <button
-                                onClick={() => updateKeyStatus(key.id, true)}
-                                className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded transition-colors duration-200"
-                                title="启用密钥"
-                              >
-                                启用
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => startEditing(key)}
+                                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded transition-colors duration-200"
+                                  title="修改密钥"
+                                >
+                                  修改
+                                </button>
+                                <button
+                                  onClick={() => updateKeyStatus(key.id, !key.isActive)}
+                                  className={`text-xs px-2 py-1 rounded transition-colors duration-200 ${
+                                    key.isActive 
+                                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                                      : 'bg-green-500 hover:bg-green-600 text-white'
+                                  }`}
+                                  title={key.isActive ? "禁用密钥" : "启用密钥"}
+                                >
+                                  {key.isActive ? "禁用" : "启用"}
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>

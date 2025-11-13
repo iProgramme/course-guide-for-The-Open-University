@@ -59,13 +59,23 @@ export async function POST(request: Request) {
       });
       
       if (isStillValid && existingKey.isActive) {
-        // 如果密钥仍然有效，返回密钥以供直接使用
+        // 如果密钥仍然有效，先增加使用次数，然后返回密钥以供直接使用
+        const [updatedKey] = await db
+          .update(apiKeys)
+          .set({ 
+            usedCount: (existingKey.usedCount ?? 0) + 1
+          })
+          .where(eq(apiKeys.id, existingKey.id))
+          .returning();
+
         return NextResponse.json({ 
           success: true, 
           data: {
-            key: existingKey.key,
+            key: updatedKey.key,
             message: '使用现有有效密钥',
-            isNew: false
+            isNew: false,
+            expiresAt: updatedKey.expiresAt, // 返回有效期截止日期
+            usedCount: updatedKey.usedCount // 返回更新后的使用次数
           }
         });
       } else {
@@ -98,7 +108,7 @@ export async function POST(request: Request) {
     const twoHoursLater = new Date();
     twoHoursLater.setHours(twoHoursLater.getHours() + 2);
 
-    // 创建新的2小时有效密钥记录，取消使用次数限制
+    // 创建新的2小时有效密钥记录，取消使用次数限制，但初始使用次数为1
     const [createdKey] = await db
       .insert(apiKeys)
       .values({
@@ -109,6 +119,7 @@ export async function POST(request: Request) {
         originalParams: originalStr,
         user: `Trial_${originalStr.substring(0, 8)}`, // 使用 originalStr 的前8位作为用户标识
         isActive: true,
+        usedCount: 1, // 初始使用次数为1 since the user just initiated the trial
       })
       .returning();
 
@@ -117,7 +128,9 @@ export async function POST(request: Request) {
       data: {
         key: createdKey.key,
         message: '新密钥生成成功',
-        isNew: true
+        isNew: true,
+        expiresAt: createdKey.expiresAt, // 返回有效期截止日期
+        usedCount: createdKey.usedCount // 返回使用次数
       }
     });
   } catch (error) {

@@ -1,7 +1,7 @@
 // 课程指南扩展 - 综合脚本
 // 该文件包含所有三个版本：基础版（2级），基础版（3级）和专业版
 var baseUrl = [
-  'https://course-guide-for-the-open-universit.vercel.app',
+  'https://chajian.nano-bananana.xyz',
   'http://localhost:3000'
 ][0]
 // ================ 基础版 - 2级目录 ================
@@ -52,7 +52,7 @@ const Basic2Level = {
         // 没有找到i标签，直接进入下一步
         setTimeout(() => {
             this.clickNextItem(index, items);
-        }, 7000);
+        }, 7000*3);
     }
   },
 
@@ -64,7 +64,7 @@ const Basic2Level = {
     if (materialElements.length === 0) {
         setTimeout(() => {
             this.clickNextItem(index, items);
-        }, 7000);
+        }, 7000*3);
         return;
     }
 
@@ -75,7 +75,7 @@ const Basic2Level = {
     if (currentMatIndex >= materialElements.length) {
         setTimeout(() => {
             this.clickNextItem(menuIndex, menuItems);
-        }, 7000);
+        }, 7000*3);
         return;
     }
 
@@ -83,7 +83,7 @@ const Basic2Level = {
     materialElements[currentMatIndex].click();
 
     setTimeout(() => {
-        // 点击后等待7秒，然后点击预览器的关闭按钮
+        // 点击后等待7*3秒，然后点击预览器的关闭按钮
         const closeBtn = document.querySelector('#file-previewer > div > div > div.header.clearfix > a');
         if (closeBtn) {
             closeBtn.click();
@@ -92,8 +92,8 @@ const Basic2Level = {
         // 继续处理下一个.ivu-table-cell .ng-scope元素
         setTimeout(() => {
             this.processMaterialElements(currentMatIndex + 1, materialElements, menuIndex, menuItems);
-        }, 2000);
-    }, 7000);
+        }, 2000*3);
+    }, 7000*3);
   },
 
   handleVideoItem: function(index, items) {
@@ -123,15 +123,15 @@ const Basic2Level = {
             // 视频播放完毕，进入下一步
             setTimeout(() => {
                 this.clickNextItem(menuIndex, menuItems);
-            }, 7000);
+            }, 7000*3);
             return;
         }
     }
 
-    // 未播放完毕，1秒后再次检查
+    // 未播放完毕，1*3秒后再次检查
     setTimeout(() => {
         this.checkVideoTime(menuIndex, menuItems);
-    }, 1000);
+    }, 1000*3);
   },
 
   clickNextItem: function(currentIndex, items) {
@@ -139,15 +139,15 @@ const Basic2Level = {
         // 点击下一个菜单项
         items[currentIndex + 1].click();
 
-        // 等待7秒后处理下一个菜单项
+        // 等待7*3秒后处理下一个菜单项
         setTimeout(() => {
             this.processNextItem(currentIndex + 1, items);
-        }, 7000);
+        }, 7000*3);
     } else {
         // 已经是最后一个，打印完成
         setTimeout(() => {
             console.log('完成所有，有问题请联系作者微信：teachAIGC');
-        }, 7000);
+        }, 7000*3);
     }
   }
 };
@@ -196,7 +196,7 @@ const Basic3Level = {
           } else {
             this.runNextSection(); // 如果未找到项目，转到下一个章节
           }
-        }, 7000);
+        }, 7000*3);
       }
     } else {
       console.log('基础版3级: 所有章节已完成');
@@ -233,13 +233,13 @@ const Basic3Level = {
                 this.runElementsSequentially(arr, arrChild, index + 1);
               }
             }
-          }, 1000);
+          }, 1000*3);
           return;
         }
       } else if (icon && icon.classList.contains('font-syllabus-page')) {
         setTimeout(() => {
           this.runElementsSequentially(arr, arrChild, index + 1);
-        }, 7000);
+        }, 7000*3);
         return;
       } else if(icon && icon.classList.contains('font-syllabus-material')){
         // 获取所有"查看"按钮
@@ -251,7 +251,7 @@ const Basic3Level = {
             // 所有"查看"按钮已处理，继续下一个项目
             setTimeout(() => {
               this.runElementsSequentially(arr, arrChild, index + 1);
-            }, 7000);
+            }, 7000*3);
             return;
           }
           
@@ -259,15 +259,15 @@ const Basic3Level = {
           if (button.textContent.includes('查看')) {
             button.click();
             
-            // 7秒后关闭预览器
+            // 7*3秒后关闭预览器
             setTimeout(() => {
               const closeBtn = document.querySelector('#file-previewer > div > div > div.header.clearfix > a');
               if (closeBtn) closeBtn.click();
               
               // 继续下一个"查看"按钮
               currentIndex++;
-              setTimeout(clickNextViewButton, 7000);
-            }, 7000);
+              setTimeout(clickNextViewButton, 7000*3);
+            }, 7000*3);
           } else {
             // 如果不是"查看"按钮则跳过
             currentIndex++;
@@ -281,7 +281,7 @@ const Basic3Level = {
       }
 
       this.runElementsSequentially(arr, arrChild, index + 1);
-    }, 7000);
+    }, 7000*3);
   },
 
   // 初始化3级自动化
@@ -319,7 +319,7 @@ const Basic3Level = {
             if (arr.length > 0) {
               this.runElementsSequentially(arr, arrChild, 0);
             }
-          }, 7000);
+          }, 7000*3);
         }
       }
     }

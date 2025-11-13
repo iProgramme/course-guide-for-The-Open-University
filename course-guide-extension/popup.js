@@ -1,6 +1,6 @@
 // 课程指南扩展弹窗处理器
 var baseUrl = [
-  'https://course-guide-for-the-open-universit.vercel.app',
+  'https://chajian.nano-bananana.xyz',
   'http://localhost:3000'
 ][0];
 // 显示toast通知的函数
@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const verifyKeyBtn = document.getElementById('verifyKeyBtn');
     const keyInputContainer = document.querySelector('.key-input-container');
     const statusDiv = document.getElementById('status');
+    const switchToUpgradeTabBtn = document.getElementById('switchToUpgradeTab');
     
     // 添加一个标志来跟踪密钥验证状态
     let isProVersionAuthorized = false;
@@ -520,6 +521,24 @@ document.addEventListener('DOMContentLoaded', function() {
         apiKeyInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 verifyKeyBtn.click();
+            }
+        });
+    }
+    
+    // 添加切换到升级标签页的功能
+    if (switchToUpgradeTabBtn) {
+        switchToUpgradeTabBtn.addEventListener('click', function() {
+            // 移除所有激活状态
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // 激活升级标签
+            const upgradeTabButton = document.querySelector('.tab-button[data-tab="upgrade"]');
+            const upgradeTabContent = document.getElementById('upgrade');
+            
+            if (upgradeTabButton && upgradeTabContent) {
+                upgradeTabButton.classList.add('active');
+                upgradeTabContent.classList.add('active');
             }
         });
     }

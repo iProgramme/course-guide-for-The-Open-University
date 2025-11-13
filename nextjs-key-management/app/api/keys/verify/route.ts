@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       success: true,
        // 还返回并生成一个任意的字符串，用来迷惑用户，防止用户直接模拟一个后端绕过验证
       str: 'sk_'+Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15)+Math.random().toString(36).substring(2, 15),
+      expiresAt: record.expiresAt // 返回有效期截止日期
     
     });
   } catch (error) {
