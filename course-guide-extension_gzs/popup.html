@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>课程指南扩展</title>
+    <style>
+        body {
+            width: 400px;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 10px;
+            height: 520px;
+            overflow-y: auto;
+            background-color: #ffffff;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .feature-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .feature-btn:hover::before {
+            left: 100%;
+        }
+        
+        .feature-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .status {
+            margin-top: 15px;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            padding: 10px;
+            display: none;
+        }
+        
+        
+        .wechat-section {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        /* Toast notification styles */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .toast-success {
+            background-color: #4CAF50;
+        }
+        
+        .toast-error {
+            background-color: #f44336;
+        }
+        
+        .toast-info {
+            background-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- 功能标签页 -->
+    <div id="features" class="tab-content active">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="color: #2c3e50; margin: 0;">🎓 国开课程智能助手</h2>
+            <p style="color: #7f8c8d; margin: 5px 0 0;">智能完成课程任务，节省宝贵时间</p>
+        </div>
+        
+        <!-- 立即开始功能卡 -->
+        <div style="background: linear-gradient(135deg, #a8edea, #fed6e3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #b3d9d9; position: relative; overflow: hidden;">
+            <h3 style="text-align: center; color: #2c3e50; margin-top: 10px; margin-bottom: 12px;">💎 专业版 - 智能升级</h3>
+            <div style="text-align: left; margin-bottom: 10px;">
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>智能导航</strong> - 自动切换章节，无需手动操作</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>4倍速</strong> - 视频自动加速，效率提升300%（可免费定制）</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>300%课程速度</strong> - 整体上课效率提升300%（可免费定制）</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>全课程覆盖</strong> - 处理所有类型课程内容</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>一键完成</strong> - 点击启动，自动完成整门课程</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>稳定可靠</strong> - 几乎无需重新运行</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>时间优势</strong> - 2-5天完成全部课程</p>
+                <p style="margin: 8px 0; font-size: 13px; color: #34495e;"><span style="color: #27ae60;">✓</span> <strong>附赠高效做题攻略</strong> - 准确率超90%，做题时间减少超90%</p>
+            </div>
+            <div style="background: #e8f6f3; border: 2px solid #58d68d; border-radius: 10px; padding: 10px; margin: 10px 0; text-align: center;">
+                <p style="margin: 5px 0; font-size: 13px; color: #27ae60; font-weight: bold;">
+                    ⏱️ <strong>时间优势：</strong> 专业版2-5天完成，自刷需5-30天！
+                </p>
+                <p style="margin: 5px 0; font-size: 13px; color: #27ae60; font-weight: bold;">
+                    🎯 <strong>附赠攻略：</strong> 准确率超90%，做题时间减少超90%
+                </p>
+            </div>
+            <button id="start" class="feature-btn" style="margin: 8px auto; display: block; background: linear-gradient(45deg, #2ecc71, #27ae60); font-size: 15px; padding: 10px;">
+                <span style="font-size: 16px; font-weight: bold; display: block;">⏰ 立即开始</span>
+            </button>
+            <div class="wechat-section" style="background: #f8f9fa; border-radius: 10px; padding: 15px;">
+                <h3 style="color: #2c3e50; margin-top: 0;">📢 注意事项</h3>
+                <p style="font-size: 12px; color: #888; margin: 10px 0 5px; text-align: center;">⚠️ 仅限个人使用，禁止分享或转售</p>
+                <p style="font-size: 13px; color: #2c3e50; text-align: center; margin: 15px 0 0;">📞 如有疑问，联系微信：<strong style="color: #3498db;">teachAIGC</strong></p>
+            </div>
+        </div>
+        
+        <div id="status" class="status">准备开始</div>
+    </div>
+    <!-- Toast Notification -->
+    <div id="toast">提示信息</div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "国开大学上课辅助",
+  "version": "1.0",
+  "description": "Automates course completion for Open University",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://course-guide-for-the-open-universit.vercel.app/*",
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "国开大学辅助"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["payment/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

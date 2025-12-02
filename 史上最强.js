@@ -182,6 +182,3 @@ async function startAutomation() {
 
     console.log("\n🎉🎉🎉 恭喜！所有章节的所有任务已全部完成！ 🎉🎉🎉");
 }
-
-// 启动脚本
-// startAutomation();

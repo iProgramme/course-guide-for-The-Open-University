@@ -6,10 +6,10 @@ import { generateApiKey, isKeyValid } from '@/lib/key-utils';
 
 export async function POST(request: Request) {
   try {
-    const { originalStr } = await request.json();
+    const { originalStr, keyType } = await request.json();
 
     if (!originalStr) {
-      return NextResponse.json({ success: false, error: '缺少 originalStr 参数' }, { status: 400 });
+      return NextResponse.json({ success: false, error: '缺少信息，请到正确的页面再运行' }, { status: 400 });
     }
 
     // 检查是否有使用相同 originalStr 的密钥存在（无论是否有效）
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
       .insert(apiKeys)
       .values({
         key: newKey,
-        keyType: '免费试用',
+        keyType: keyType,
         expiresAt: twoHoursLater,
         maxUses: -1, // 取消使用次数限制（-1表示无限制）
         originalParams: originalStr,
