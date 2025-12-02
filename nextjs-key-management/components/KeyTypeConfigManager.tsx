@@ -409,18 +409,46 @@ const KeyTypeConfigManager = () => {
                             {format(new Date(item.config.expiresAt), 'yyyy-MM-dd HH:mm')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div>
-                              <span className={item.config.isActive !== false ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                                {item.config.isActive !== false ? '激活' : '禁用'}
-                              </span>
-                              <br />
-                              <span className={item.usage.isExpired ? 'text-red-600 text-xs' : 'text-green-600 text-xs'}>
-                                {item.usage.isExpired
-                                  ? '已过期'
-                                  : item.usage.daysUntilExpiry > 0
-                                    ? `${item.usage.daysUntilExpiry}天后到期`
-                                    : '即将到期'}
-                              </span>
+                            <div className="space-y-1">
+                              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.config.isActive !== false
+                                  ? 'bg-green-100 text-green-800 border border-green-300'
+                                  : 'bg-red-100 text-red-800 border border-red-300'
+                              }`}>
+                                {item.config.isActive !== false ? (
+                                  <>
+                                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5 inline-block"></span>
+                                    激活
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="w-2 h-2 bg-red-500 rounded-full mr-1.5 inline-block"></span>
+                                    禁用
+                                  </>
+                                )}
+                              </div>
+                              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.usage.isExpired
+                                  ? 'bg-red-100 text-red-800 border border-red-300'
+                                  : 'bg-blue-100 text-blue-800 border border-blue-300'
+                              }`}>
+                                {item.usage.isExpired ? (
+                                  <>
+                                    <span className="w-2 h-2 bg-red-500 rounded-full mr-1.5 inline-block"></span>
+                                    已过期
+                                  </>
+                                ) : item.usage.daysUntilExpiry > 0 ? (
+                                  <>
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-1.5 inline-block"></span>
+                                    {item.usage.daysUntilExpiry}天后到期
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5 inline-block"></span>
+                                    即将到期
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
