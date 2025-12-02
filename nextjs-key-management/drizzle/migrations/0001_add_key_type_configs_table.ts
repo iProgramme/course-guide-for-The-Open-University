@@ -19,7 +19,6 @@ export const keyTypeConfigs = pgTable('key_type_configs', {
   keyType: text('key_type').notNull().unique(), // keyType，如 '国开大学-87654484'
   maxAccounts: integer('max_accounts').notNull(), // 账号数量上限
   expiresAt: timestamp('expires_at').notNull(), // 配置的有效期
-  isActive: boolean('is_active').default(true), // 是否激活
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

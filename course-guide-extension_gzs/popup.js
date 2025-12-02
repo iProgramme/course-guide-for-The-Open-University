@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({
                         originalStr: originalStr,
-                        keyType: 'gzs1-20',
+                        keyType: '1111',
                     })
                 });
                 

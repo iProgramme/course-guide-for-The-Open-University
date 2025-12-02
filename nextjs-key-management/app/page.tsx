@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import KeyManagement from '@/components/KeyManagement';
 import BulkKeyGenerator from '@/components/BulkKeyGenerator';
+import KeyTypeConfigManager from '@/components/KeyTypeConfigManager';
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'manage' | 'bulk'>('manage');
+  const [activeTab, setActiveTab] = useState<'manage' | 'bulk' | 'config'>('manage');
 
   useEffect(() => {
     setIsMounted(true);
@@ -61,6 +62,16 @@ export default function Home() {
                 >
                   批量生成
                 </button>
+                <button
+                  onClick={() => setActiveTab('config')}
+                  className={`py-4 px-6 text-center font-medium text-sm ${
+                    activeTab === 'config'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  KeyType配置
+                </button>
               </nav>
             </div>
 
@@ -68,8 +79,12 @@ export default function Home() {
             <div className="p-6">
               {activeTab === 'manage' ? (
                 <KeyManagement />
-              ) : (
+              ) : activeTab === 'bulk' ? (
                 <BulkKeyGenerator />
+              ) : (
+                <div className="key-type-config-tab">
+                  <KeyTypeConfigManager />
+                </div>
               )}
             </div>
           </div>
