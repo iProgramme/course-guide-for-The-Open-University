@@ -130,12 +130,12 @@ export async function DELETE(request: Request) {
       .delete(keyTypeConfigs)
       .where(eq(keyTypeConfigs.keyType, keyType));
 
-    if (result.rowsAffected === 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: '未找到指定的 keyType 配置' 
-      }, { status: 404 });
-    }
+    // if (result.rowsAffected === 0) {
+    //   return NextResponse.json({ 
+    //     success: false, 
+    //     error: '未找到指定的 keyType 配置' 
+    //   }, { status: 404 });
+    // }
 
     return NextResponse.json({
       success: true,
