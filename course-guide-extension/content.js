@@ -586,24 +586,25 @@ const ExtensionController = {
             if (globalData.user && typeof globalData.user === 'object') {
               const user = globalData.user;
               
-              // 获取 name 和 userNo
+              // 获取 name 和 userNo 以及 mobile
               const userName = user.name || user.userName || user.Name || user.username || '';
               const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || user.id || '';
+              const mobile = user.mobile || user.Mobile || user.phone || user.Phone || '';
               
-              if (userName && userNo) {
+              if (userName && userNo && mobile) {
                 // 成功找到用户信息
-                console.log('content script: 成功从globalData.user获取用户信息:', {name: userName, userNo: userNo});
-                sendResponse({originalStr: userName + '|' + userNo, error: null});
+                console.log('content script: 成功从globalData.user获取用户信息:', {name: userName, userNo: userNo, mobile: mobile});
+                sendResponse({originalStr: userName + '|' + userNo + '|' + mobile, error: null});
               } else {
-                console.log('content script: globalData.user存在但用户信息不完整', {name: userName, userNo: userNo});
+                console.log('content script: globalData.user存在但用户信息不完整', {name: userName, userNo: userNo, mobile: mobile});
                 // 尝试返回已有的信息
-                sendResponse({originalStr: userName || userNo || JSON.stringify(user) || '', error: null});
+                sendResponse({originalStr: userName || userNo || mobile || JSON.stringify(user) || '', error: null});
               }
             } else {
               console.log('content script: 未找到 globalData.user 对象');
-              if (globalData.name && globalData.userNo) {
+              if (globalData.name && globalData.userNo && globalData.mobile) {
                 // 检查 globalData 本身是否直接包含用户信息
-                sendResponse({originalStr: globalData.name + '|' + globalData.userNo, error: null});
+                sendResponse({originalStr: globalData.name + '|' + globalData.userNo + '|' + globalData.mobile, error: null});
               } else {
                 console.log('content script: globalData.user不存在，返回globalData对象');
                 sendResponse({originalStr: JSON.stringify(globalData) || '', error: null});

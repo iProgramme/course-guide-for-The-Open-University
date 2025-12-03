@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         const obj = window[key];
                                         if (obj && typeof obj === 'object' && !Array.isArray(obj) && 
                                             obj.user && typeof obj.user === 'object' && 
-                                            obj.user.name && obj.user.userNo) {
+                                            obj.user.name && obj.user.userNo && obj.user.mobile) {
                                             globalData = obj;
                                             console.log(`在 window.${key} 中找到用户信息`);
                                             break;
@@ -394,22 +394,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (globalData && typeof globalData === 'object' && globalData.user) {
                             const user = globalData.user;
                             
-                            // 获取 name 和 userNo，支持多种可能的字段名
+                            // 获取 name 和 userNo 和 mobile，支持多种可能的字段名
                             const userName = user.name || user.userName || user.Name || user.username || 
                                            user.nickName || user.displayName || user.realName || '';
                             const userNo = user.userNo || user.UserNo || user.studentNo || user.studentId || 
                                          user.id || user.userId || user.StudentNo || user.userNumber || '';
+                            const mobile = user.mobile || user.Mobile || user.phone || user.Phone || '';
                             
-                            if (userName && userNo) {
-                                // console.log('todo 成功获取用户信息:', {name: userName, no: userNo});
-                                return userName + '|' + userNo;
+                            if (userName && userNo && mobile) {
+                                // console.log('todo 成功获取用户信息:', {name: userName, no: userNo, mobile: mobile});
+                                return userName + '|' + userNo + '|' + mobile;
                             } else {
                                 // 用户信息不完整但有部分信息
-                                return userName || userNo || JSON.stringify(user) || '';
+                                return userName || userNo || mobile || JSON.stringify(user) || '';
                             }
-                        } else if (globalData && globalData.name && globalData.userNo) {
+                        } else if (globalData && globalData.name && globalData.userNo && globalData.mobile) {
                             // 检查globalData本身是否包含用户信息
-                            return globalData.name + '|' + globalData.userNo;
+                            return globalData.name + '|' + globalData.userNo + '|' + globalData.mobile;
                         } else {
                             console.log('未找到包含用户信息的对象');
                             return '';
@@ -439,8 +440,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (window && typeof window.globalData !== 'undefined' && 
                                     window.globalData.user && 
                                     window.globalData.user.name && 
-                                    window.globalData.user.userNo) {
-                                    result = window.globalData.user.name + '|' + window.globalData.user.userNo;
+                                    window.globalData.user.userNo &&
+                                    window.globalData.user.mobile) {
+                                    result = window.globalData.user.name + '|' + window.globalData.user.userNo + '|' + window.globalData.user.mobile;   
                                 } 
                                 // 遍历window对象查找包含用户信息的对象
                                 else {
@@ -450,8 +452,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 const obj = window[key];
                                                 if (obj && typeof obj === 'object' && !Array.isArray(obj) && 
                                                     obj.user && typeof obj.user === 'object' && 
-                                                    obj.user.name && obj.user.userNo) {
-                                                    result = obj.user.name + '|' + obj.user.userNo;
+                                                    obj.user.name && obj.user.userNo &&
+                                                    obj.user.mobile) {
+                                                    result = obj.user.name + '|' + obj.user.userNo + '|' + obj.user.mobile;
                                                     break;
                                                 }
                                             } catch (e) {
@@ -473,7 +476,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 (script.textContent.includes('globalData') || 
                                                  script.textContent.includes('user') || 
                                                  script.textContent.includes('name') || 
-                                                 script.textContent.includes('userNo'))) {
+                                                 script.textContent.includes('userNo') ||
+                                                 script.textContent.includes('mobile'))) {
                                                 // 尝试从内联脚本中提取变量（如果可能）
                                                 // 这种方式无法直接提取，但可以记录相关信息
                                             }
