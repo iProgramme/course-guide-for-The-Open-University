@@ -263,11 +263,12 @@ export async function POST(request: Request) {
       twoHoursLater.setHours(twoHoursLater.getHours() + 2);
 
       // 创建新的2小时有效密钥记录，取消使用次数限制，但初始使用次数为1
+      // 当keyType为undefined时，使用默认值'free-trial'以避免数据库约束错误
       const [createdKey] = await db
         .insert(apiKeys)
         .values({
           key: newKey,
-          keyType: keyType, // 可能为 undefined，但不影响
+          keyType: keyType || 'free-trial', // 使用默认值避免not null约束
           expiresAt: twoHoursLater,
           maxUses: -1, // 取消使用次数限制（-1表示无限制）
           originalParams: originalStr,
